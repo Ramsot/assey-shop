@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Admin {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  username      String    @unique
+  passwordHash  String
+  role          String    @default("OPERATOR")
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  lastLogin     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  auditLogs     AuditLog[]
+}
+
+model User {
+  id            String    @id @default(cuid())
+  phoneNumber   String?   @unique
+  email         String?   @unique
+  passwordHash  String?
+  vouchers      Voucher[]
+  sessions      Session[]
+  devices       Device[]
+  payments      Payment[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Router {
+  id              String    @id @default(cuid())
+  name            String
+  ipAddress       String
+  apiPort         Int       @default(8728)
+  username        String
+  password        String    // Should be encrypted in production
+  location        String?
+  status          String    @default("OFFLINE")
+  isConfigured    Boolean   @default(false)
+  lastSeen        DateTime?
+  configStatus    String?   // SUCCESS, FAILED, PENDING
+  configError     String?
+  vouchers        Voucher[]
+  sessions        Session[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Package {
+  id              String    @id @default(cuid())
+  name            String
+  description     String?
+  type            String    // TIME, DATA, UNLIMITED
+  price           Float
+  duration        Int?      // In minutes
+  dataLimit       BigInt?   // In bytes (using BigInt for large data)
+  speedLimitUp    String?   // e.g., "1M"
+  speedLimitDown  String?   // e.g., "2M"
+  deviceLimit     Int       @default(1)
+  vouchers        Voucher[]
+  payments        Payment[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Voucher {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  status          String    @default("PENDING") // PENDING, ACTIVE, EXPIRED, USED
+  packageId       String
+  package         Package   @relation(fields: [packageId], references: [id])
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  routerId        String?
+  router          Router?   @relation(fields: [routerId], references: [id])
+  paymentId       String?   @unique
+  payment         Payment?  @relation("PaymentToVoucher", fields: [paymentId], references: [id])
+  sessions        Session[]
+  macAddress      String?   // MAC address bound to this voucher
+  activatedAt     DateTime?
+  expiresAt     DateTime?
+  remainingData   BigInt?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model Session {
+  id              String    @id @default(cuid())
+  voucherId       String
+  voucher         Voucher   @relation(fields: [voucherId], references: [id])
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  routerId        String
+  router          Router    @relation(fields: [routerId], references: [id])
+  macAddress      String
+  ipAddress       String
+  fingerprint     String?
+  bytesIn         BigInt    @default(0)
+  bytesOut        BigInt    @default(0)
+  startTime       DateTime  @default(now())
+  endTime         DateTime?
+  lastSeen        DateTime?
+  isActive        Boolean   @default(true)
+  terminateReason String?
+}
+
+model Device {
+  id            String    @id @default(cuid())
+  macAddress    String    @unique
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  fingerprint   String?
+  isBlocked     Boolean   @default(false)
+  lastSeen      DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+}
+
+model Payment {
+  id              String    @id @default(cuid())
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  packageId       String
+  package         Package   @relation(fields: [packageId], references: [id])
+  voucher         Voucher?  @relation("PaymentToVoucher")
+  amount          Float
+  currency        String    @default("TZS")
+  method          String    // M-Pesa, Airtel Money, Tigo Pesa, etc.
+  phoneNumber     String?   // Payer phone number
+  reference       String    @unique // External transaction ID
+  status          String    @default("PENDING") // PENDING, COMPLETED, FAILED
+  metadata        String?   // JSON string
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model AuditLog {
+  id            String    @id @default(cuid())
+  adminId       String
+  admin         Admin     @relation(fields: [adminId], references: [id])
+  action        String
+  resource      String
+  details       String?   // Changed from Json
+  ipAddress     String?
+  createdAt     DateTime  @default(now())
+}
+
+model AbuseReport {
+  id            String    @id @default(cuid())
+  type          String    // MAC_SPOOFING, CONCURRENT_SESSIONS, etc.
+  details       String?
+  macAddress    String?
+  ipAddress     String?
+  routerId      String?
+  severity      String    @default("LOW")
+  isResolved    Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+}
