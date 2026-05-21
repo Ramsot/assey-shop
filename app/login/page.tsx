@@ -18,10 +18,17 @@ export default function LoginPage() {
     try {
       const res = await fetch("/api/auth/admin/login", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ username, password }),
       });
+      
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      
+      if (!res.ok) {
+        throw new Error(data.error || "Login failed");
+      }
       
       window.location.href = "/admin";
     } catch (err: any) {
@@ -33,9 +40,9 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-6 relative overflow-hidden">
-      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full" />
+      <div className="absolute top-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
       
-      <div className="w-full max-w-md z-10">
+      <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 mb-6">
             <Shield className="w-6 h-6 text-white" />

@@ -13,9 +13,10 @@ export async function POST(req: NextRequest) {
     const paymentService = new PaymentService();
     // For now, we'll mock the amount if not provided, or get it from package
     const payment = await paymentService.initiatePayment({
-      userId: "guest", // Captive portal users are usually guests until payment
+      userId: "guest",
+      packageId,
       phoneNumber,
-      amount: amount || 1000, // This should come from package in production
+      amount: amount || 1000,
       method: method || "MPESA",
     });
 

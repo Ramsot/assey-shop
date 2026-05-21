@@ -29,7 +29,7 @@ export class PaymentProcessor {
     // 2. Create or update payment record
     const payment = await prisma.payment.upsert({
       where: { reference },
-      update: { status: "COMPLETED" },
+      update: { status: "COMPLETED" } as any,
       create: {
         reference,
         phoneNumber,
@@ -37,7 +37,7 @@ export class PaymentProcessor {
         method,
         packageId,
         status: "COMPLETED",
-      },
+      } as any,
     });
 
     // 3. Create a voucher for this payment
@@ -50,7 +50,7 @@ export class PaymentProcessor {
         routerId,
         macAddress,
         status: "ACTIVE",
-      },
+      } as any,
     });
 
     // 4. Trigger Instant Authorization

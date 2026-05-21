@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { 
   Users, 
   Ticket, 
@@ -117,9 +118,9 @@ export default async function AdminDashboardPage() {
               <p className="text-sm text-white/30 text-center py-10">No recent alerts</p>
             )}
           </div>
-          <button className="w-full mt-8 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-sm font-medium">
+          <Link href="/admin/abuse" className="block w-full mt-8 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-colors text-sm font-medium text-center">
             View All Reports
-          </button>
+          </Link>
         </div>
       </div>
     </div>

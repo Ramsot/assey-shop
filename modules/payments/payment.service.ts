@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 
 export interface PaymentRequest {
   userId: string;
+  packageId: string;
   amount: number;
   phoneNumber: string;
   method: "MPESA" | "AIRTEL" | "HALOPESA";
@@ -13,12 +14,13 @@ export class PaymentService {
     const payment = await prisma.payment.create({
       data: {
         userId: req.userId,
+        packageId: req.packageId,
         amount: req.amount,
         method: req.method,
         reference: `TX-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`.toUpperCase(),
         status: "PENDING",
-        metadata: { phoneNumber: req.phoneNumber },
-      },
+        metadata: JSON.stringify({ phoneNumber: req.phoneNumber }),
+      } as any,
     });
 
     // 2. Call external API (Mocking M-Pesa STK Push)
@@ -34,8 +36,8 @@ export class PaymentService {
     const payment = await prisma.payment.update({
       where: { reference },
       data: { 
-        status,
-        metadata: { ...(metadata || {}) }
+        status: status as any,
+        metadata: JSON.stringify(metadata || {})
       },
       include: { user: true }
     });
