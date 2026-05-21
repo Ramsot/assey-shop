@@ -2,6 +2,7 @@ import { getAnalytics, getRevenueData } from "@/modules/admin/admin.actions";
 import { BarChart3, TrendingUp, ArrowUpRight, ArrowDownRight, Download, Calendar } from "lucide-react";
 import { RevenueChart } from "./analytics-charts";
 import { AnalyticsExport } from "./analytics-export";
+import { safeSerialize } from "@/lib/safe-serializer";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +51,7 @@ export default async function AnalyticsPage() {
               <p className="text-white/40 text-sm">Daily revenue collection for the last 7 days</p>
             </div>
           </div>
-          <RevenueChart data={revenueData} />
+          <RevenueChart data={safeSerialize(revenueData)} />
         </div>
 
         <div className="bg-white/5 border border-white/10 rounded-3xl p-8 flex flex-col">

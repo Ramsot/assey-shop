@@ -1,7 +1,8 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { Wifi, CheckCircle2, Clock, Database, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { safeSerialize } from "@/lib/safe-serializer";
 
 export const dynamic = "force-dynamic";
 
@@ -22,13 +23,34 @@ export default async function HotspotStatusPage(props: {
   });
 
   if (!voucher) {
-    redirect("/hotspot");
+    return (
+      <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-md bg-white/5 border border-white/10 rounded-3xl p-8 text-center space-y-6">
+          <h2 className="text-2xl font-bold">Voucher Not Found</h2>
+          <p className="text-white/50 text-sm">
+            The voucher code &quot;{code}&quot; was not found. Please check your code and try again.
+          </p>
+          <Link
+            href="/hotspot"
+            className="inline-block bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-xl font-bold transition-all"
+          >
+            Back to Hotspot
+          </Link>
+        </div>
+      </div>
+    );
   }
+
+  const safeVoucher = safeSerialize(voucher);
 
   const now = new Date();
   let remainingTime = "--";
-  if (voucher.expiresAt) {
-    const diffMs = voucher.expiresAt.getTime() - now.getTime();
+  if (safeVoucher.expiresAt) {
+    const expiryDate =
+      typeof safeVoucher.expiresAt === "string"
+        ? new Date(safeVoucher.expiresAt)
+        : safeVoucher.expiresAt;
+    const diffMs = expiryDate.getTime() - now.getTime();
     if (diffMs > 0) {
       const hours = Math.floor(diffMs / (1000 * 60 * 60));
       const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
@@ -38,8 +60,8 @@ export default async function HotspotStatusPage(props: {
     }
   }
 
-  const dataLimit = voucher.package.dataLimit
-    ? `${(Number(voucher.package.dataLimit) / (1024 * 1024 * 1024)).toFixed(1)} GB`
+  const dataLimit = safeVoucher.package.dataLimit
+    ? `${(Number(safeVoucher.package.dataLimit) / (1024 * 1024 * 1024)).toFixed(1)} GB`
     : "Unlimited";
 
   return (
@@ -83,7 +105,7 @@ export default async function HotspotStatusPage(props: {
         </div>
 
         <p className="text-center text-white/30 text-xs font-mono">
-          Code: {voucher.code}
+          Code: {safeVoucher.code}
           {mac && <> | MAC: {mac}</>}
         </p>
       </div>
