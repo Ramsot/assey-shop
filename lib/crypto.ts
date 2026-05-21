@@ -1,7 +1,7 @@
 import crypto from "crypto";
 
 const ALGORITHM = "aes-256-cbc";
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "v-p-n-s-e-c-u-r-e-n-e-t-v-o-u-c-h-e-r-o-s-32"; // 32 chars
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "securenet-vouchers-key-32-chars-"; // Must be 32 chars
 const IV_LENGTH = 16;
 
 export function encrypt(text: string) {
