@@ -1,6 +1,9 @@
 import { getAnalytics, getRevenueData } from "@/modules/admin/admin.actions";
 import { BarChart3, TrendingUp, ArrowUpRight, ArrowDownRight, Download, Calendar } from "lucide-react";
 import { RevenueChart } from "./analytics-charts";
+import { AnalyticsExport } from "./analytics-export";
+
+export const dynamic = "force-dynamic";
 
 export default async function AnalyticsPage() {
   const stats = await getAnalytics();
@@ -18,10 +21,7 @@ export default async function AnalyticsPage() {
             <Calendar className="w-4 h-4" />
             Last 30 Days
           </button>
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 transition-all text-sm font-bold shadow-lg shadow-blue-600/20">
-            <Download className="w-4 h-4" />
-            Export Report
-          </button>
+          <AnalyticsExport stats={stats} revenueData={revenueData} />
         </div>
       </div>
 

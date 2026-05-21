@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
+  // SQLite for local development; switch to postgresql for production deployment
   provider = "sqlite"
-  url      = "file:./dev.db"
+  url      = env("DATABASE_URL")
 }
 
 model Admin {
@@ -40,12 +41,12 @@ model Router {
   ipAddress       String
   apiPort         Int       @default(8728)
   username        String
-  password        String    // Should be encrypted in production
+  password        String
   location        String?
   status          String    @default("OFFLINE")
   isConfigured    Boolean   @default(false)
   lastSeen        DateTime?
-  configStatus    String?   // SUCCESS, FAILED, PENDING
+  configStatus    String?
   configError     String?
   vouchers        Voucher[]
   sessions        Session[]
@@ -57,12 +58,12 @@ model Package {
   id              String    @id @default(cuid())
   name            String
   description     String?
-  type            String    // TIME, DATA, UNLIMITED
+  type            String
   price           Float
-  duration        Int?      // In minutes
-  dataLimit       BigInt?   // In bytes (using BigInt for large data)
-  speedLimitUp    String?   // e.g., "1M"
-  speedLimitDown  String?   // e.g., "2M"
+  duration        Int?
+  dataLimit       BigInt?
+  speedLimitUp    String?
+  speedLimitDown  String?
   deviceLimit     Int       @default(1)
   vouchers        Voucher[]
   payments        Payment[]
@@ -73,7 +74,7 @@ model Package {
 model Voucher {
   id              String    @id @default(cuid())
   code            String    @unique
-  status          String    @default("PENDING") // PENDING, ACTIVE, EXPIRED, USED
+  status          String    @default("PENDING")
   packageId       String
   package         Package   @relation(fields: [packageId], references: [id])
   userId          String?
@@ -83,9 +84,9 @@ model Voucher {
   paymentId       String?   @unique
   payment         Payment?  @relation("PaymentToVoucher", fields: [paymentId], references: [id])
   sessions        Session[]
-  macAddress      String?   // MAC address bound to this voucher
+  macAddress      String?
   activatedAt     DateTime?
-  expiresAt     DateTime?
+  expiresAt       DateTime?
   remainingData   BigInt?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -94,7 +95,7 @@ model Voucher {
 model Session {
   id              String    @id @default(cuid())
   voucherId       String
-  voucher         Voucher   @relation(fields: [voucherId], references: [id])
+  voucher         Voucher   @relation(fields: [voucherId], references: [id], onDelete: Cascade)
   userId          String?
   user            User?     @relation(fields: [userId], references: [id])
   routerId        String
@@ -114,8 +115,8 @@ model Session {
 model Device {
   id            String    @id @default(cuid())
   macAddress    String    @unique
-  userId        String
-  user          User      @relation(fields: [userId], references: [id])
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
   fingerprint   String?
   isBlocked     Boolean   @default(false)
   lastSeen      DateTime  @default(now())
@@ -126,16 +127,16 @@ model Payment {
   id              String    @id @default(cuid())
   userId          String?
   user            User?     @relation(fields: [userId], references: [id])
-  packageId       String
-  package         Package   @relation(fields: [packageId], references: [id])
+  packageId       String?
+  package         Package?  @relation(fields: [packageId], references: [id])
   voucher         Voucher?  @relation("PaymentToVoucher")
   amount          Float
   currency        String    @default("TZS")
-  method          String    // M-Pesa, Airtel Money, Tigo Pesa, etc.
-  phoneNumber     String?   // Payer phone number
-  reference       String    @unique // External transaction ID
-  status          String    @default("PENDING") // PENDING, COMPLETED, FAILED
-  metadata        String?   // JSON string
+  method          String
+  phoneNumber     String?
+  reference       String    @unique
+  status          String    @default("PENDING")
+  metadata        String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 }
@@ -146,14 +147,14 @@ model AuditLog {
   admin         Admin     @relation(fields: [adminId], references: [id])
   action        String
   resource      String
-  details       String?   // Changed from Json
+  details       String?
   ipAddress     String?
   createdAt     DateTime  @default(now())
 }
 
 model AbuseReport {
   id            String    @id @default(cuid())
-  type          String    // MAC_SPOOFING, CONCURRENT_SESSIONS, etc.
+  type          String
   details       String?
   macAddress    String?
   ipAddress     String?

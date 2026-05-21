@@ -2,6 +2,8 @@ import { getPackages } from "@/modules/admin/admin.actions";
 import { HotspotClient } from "./hotspot-client";
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
 export default async function HotspotPortalPage() {
   const packages = await getPackages();
 

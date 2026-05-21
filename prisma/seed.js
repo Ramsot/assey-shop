@@ -2,6 +2,13 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
+  // Hash password using the same algorithm as the app
+  const { hashPassword } = require("../modules/auth/password.utils");
+  const path = require("path");
+  process.env.ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "securenet-vouchers-key-32-chars-";
+
+  const adminPassword = await hashPassword("password123");
+
   // 1. Create Admin
   const admin = await prisma.admin.upsert({
     where: { username: "admin" },
@@ -9,7 +16,7 @@ async function main() {
     create: {
       username: "admin",
       email: "admin@securenet.os",
-      passwordHash: "$argon2id$v=19$m=65536,t=3,p=1$7X7X7X7X7X7X7X7X7X7X7A$X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7X7w", // password: password123
+      passwordHash: adminPassword,
       role: "SUPER_ADMIN",
     },
   });
@@ -38,7 +45,7 @@ async function main() {
       type: "DATA",
       price: 5000,
       duration: 10080,
-      dataLimit: 2000000000, // ~2GB fits in Int
+      dataLimit: 2000000000,
       speedLimitDown: "5M",
       speedLimitUp: "2M",
     },
@@ -93,7 +100,8 @@ async function main() {
     },
   });
 
-  console.log("Seed data created successfully");
+  console.log("✅ Seed data created successfully");
+  console.log("   Admin login: admin / password123");
 }
 
 main()

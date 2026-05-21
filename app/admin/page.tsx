@@ -12,6 +12,8 @@ import { DashboardCharts } from "./dashboard-charts";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboardPage() {
   const statsData = await getDashboardStats();
   const trafficData = await getTrafficData();

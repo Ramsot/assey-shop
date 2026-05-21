@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Wifi, Shield, Zap, BarChart3, Globe, Smartphone, ArrowRight } from "lucide-react";
 import { getPublicStats } from "@/modules/admin/admin.actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function LandingPage() {
   const stats = await getPublicStats();
 

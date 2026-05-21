@@ -1,38 +1,46 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Ticket, Wifi, ShieldCheck, Zap, CreditCard, Clock, Database, Smartphone, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Ticket,
+  Wifi,
+  ShieldCheck,
+  Zap,
+  CreditCard,
+  Clock,
+  Database,
+  Smartphone,
+  Loader2,
+} from "lucide-react";
 
 interface HotspotClientProps {
   packages: any[];
 }
 
 export function HotspotClient({ packages }: HotspotClientProps) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [code, setCode] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentRef, setPaymentRef] = useState("");
   const [error, setError] = useState("");
   const [showVoucherInput, setShowVoucherInput] = useState(false);
-  const [selectedPackage, setSelectedPackage] = useState<any>(null);
 
-  // MikroTik Query Params
   const mac = searchParams.get("mac");
   const ip = searchParams.get("ip");
-  const routerId = searchParams.get("router_id"); // We should pass this in the redirect URL
+  const routerId = searchParams.get("router_id");
 
   const handleBuyPackage = async (pkg: any) => {
     if (!phoneNumber) {
       setError("Please enter your phone number first");
       return;
     }
-    
+
     setLoading(true);
     setError("");
-    setSelectedPackage(pkg);
 
     try {
       const res = await fetch("/api/payments/initiate", {
@@ -43,18 +51,19 @@ export function HotspotClient({ packages }: HotspotClientProps) {
           packageId: pkg.id,
           mac,
           ip,
-          routerId: routerId || "default", // Fallback if not provided
-          method: "MPESA", // Default to M-Pesa
+          routerId: routerId || pkg.id,
+          method: "MPESA",
+          amount: pkg.price,
         }),
       });
-      
+
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      
+
+      setPaymentRef(data.reference);
       setPaymentInitiated(true);
-      // In a real scenario, we'd poll for status or wait for webhook
-    } catch (err: any) {
-      setError(err.message || "Failed to initiate payment.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to initiate payment.");
     } finally {
       setLoading(false);
     }
@@ -62,20 +71,29 @@ export function HotspotClient({ packages }: HotspotClientProps) {
 
   const handleVoucherConnect = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!code.trim()) {
+      setError("Please enter a voucher code");
+      return;
+    }
+
     setLoading(true);
     setError("");
 
     try {
       const res = await fetch("/api/hotspot/connect", {
         method: "POST",
-        body: JSON.stringify({ code, mac, ip }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code.toUpperCase(), mac, ip }),
       });
       const data = await res.json();
       if (data.error) throw new Error(data.error);
-      
-      window.location.href = "/hotspot/status";
-    } catch (err: any) {
-      setError(err.message || "Failed to connect. Please check your code.");
+
+      const params = new URLSearchParams();
+      params.set("code", code.toUpperCase());
+      if (mac) params.set("mac", mac);
+      router.push(`/hotspot/status?${params.toString()}`);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to connect. Please check your code.");
     } finally {
       setLoading(false);
     }
@@ -90,11 +108,14 @@ export function HotspotClient({ packages }: HotspotClientProps) {
           </div>
           <h2 className="text-2xl font-bold">Processing Payment</h2>
           <p className="text-white/60">
-            Please check your phone for the M-Pesa PIN prompt. 
+            Please check your phone for the M-Pesa PIN prompt.
             Once you enter your PIN, your internet will be activated automatically.
           </p>
+          {paymentRef && (
+            <p className="text-xs text-white/30 font-mono">Ref: {paymentRef}</p>
+          )}
           <div className="pt-4">
-            <button 
+            <button
               onClick={() => setPaymentInitiated(false)}
               className="text-white/40 text-sm hover:text-white"
             >
@@ -108,7 +129,6 @@ export function HotspotClient({ packages }: HotspotClientProps) {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
-      {/* Animated Background Elements */}
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/20 blur-[120px] rounded-full animate-pulse pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 blur-[120px] rounded-full animate-pulse delay-700 pointer-events-none" />
 
@@ -141,14 +161,14 @@ export function HotspotClient({ packages }: HotspotClientProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3"
+                className="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-3 disabled:opacity-50"
               >
-                {loading ? <Loader2 className="animate-spin" /> : "Connect"}
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Connect"}
               </button>
-              <button 
+              <button
                 type="button"
                 onClick={() => setShowVoucherInput(false)}
-                className="w-full text-white/40 text-sm"
+                className="w-full text-white/40 text-sm hover:text-white transition-colors"
               >
                 Back to Packages
               </button>
@@ -156,7 +176,9 @@ export function HotspotClient({ packages }: HotspotClientProps) {
           ) : (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold mb-2 ml-1 text-white/70">Phone Number (M-Pesa)</label>
+                <label className="block text-sm font-semibold mb-2 ml-1 text-white/70">
+                  Phone Number (M-Pesa)
+                </label>
                 <div className="relative">
                   <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/30" />
                   <input
@@ -170,24 +192,32 @@ export function HotspotClient({ packages }: HotspotClientProps) {
               </div>
 
               <div className="space-y-3">
-                <h2 className="text-sm font-bold text-white/40 uppercase tracking-wider">Select Package</h2>
+                <h2 className="text-sm font-bold text-white/40 uppercase tracking-wider">
+                  Select Package
+                </h2>
                 <div className="space-y-3 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
                   {packages.map((pkg) => (
-                    <button 
+                    <button
                       key={pkg.id}
                       onClick={() => handleBuyPackage(pkg)}
                       disabled={loading}
-                      className="w-full text-left p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group relative overflow-hidden"
+                      className="w-full text-left p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group relative overflow-hidden disabled:opacity-50"
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <span className="font-bold text-lg group-hover:text-blue-400">{pkg.name}</span>
-                        <span className="text-blue-400 font-black">{Number(pkg.price).toLocaleString()} TZS</span>
+                        <span className="font-bold text-lg group-hover:text-blue-400">
+                          {pkg.name}
+                        </span>
+                        <span className="text-blue-400 font-black">
+                          {Number(pkg.price).toLocaleString()} TZS
+                        </span>
                       </div>
                       <div className="flex gap-4 text-xs text-white/40 font-medium">
                         {pkg.duration && (
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {pkg.duration >= 60 ? `${Math.floor(pkg.duration / 60)}h` : `${pkg.duration}m`}
+                            {pkg.duration >= 60
+                              ? `${Math.floor(pkg.duration / 60)}h`
+                              : `${pkg.duration}m`}
                           </span>
                         )}
                         {pkg.dataLimit && (
@@ -207,7 +237,7 @@ export function HotspotClient({ packages }: HotspotClientProps) {
               </div>
 
               <div className="pt-4 border-t border-white/10">
-                <button 
+                <button
                   onClick={() => setShowVoucherInput(true)}
                   className="w-full flex items-center justify-center gap-2 text-white/40 hover:text-white transition-colors text-sm font-medium"
                 >
@@ -221,7 +251,7 @@ export function HotspotClient({ packages }: HotspotClientProps) {
 
         {error && (
           <div className="mt-4 bg-red-500/10 border border-red-500/20 text-red-400 text-sm py-3 px-4 rounded-xl flex items-center gap-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+            <div className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
             {error}
           </div>
         )}
