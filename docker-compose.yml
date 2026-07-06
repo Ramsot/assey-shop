@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: securenet-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-securepassword}
+      POSTGRES_DB: ${DB_NAME:-securenet}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - securenet-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: securenet-redis
+    restart: always
+    networks:
+      - securenet-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: securenet-app
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-admin}:${DB_PASSWORD:-securepassword}@db:5432/${DB_NAME:-securenet}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      NODE_ENV: production
+    depends_on:
+      - db
+      - redis
+    networks:
+      - securenet-network
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: securenet-proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+    networks:
+      - securenet-network
+
+networks:
+  securenet-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
