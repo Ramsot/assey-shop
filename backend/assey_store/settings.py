@@ -68,7 +68,7 @@ WSGI_APPLICATION = 'assey_store.wsgi.application'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates", PROJECT_DIR / "frontend" / "legacy"],
+        'DIRS': [d for d in [BASE_DIR / "templates", PROJECT_DIR / "frontend" / "legacy"] if d.exists()],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
