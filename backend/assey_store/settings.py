@@ -16,19 +16,25 @@ load_dotenv(PROJECT_DIR / ".env")
 
 _secret_key = os.getenv("SECRET_KEY")
 if not _secret_key:
-    if os.getenv("DEBUG", "1") == "1":
+    if os.getenv("DEBUG", "0") == "1":
         _secret_key = "django-insecure-dev-only-replace-in-production"
     else:
         raise RuntimeError("SECRET_KEY environment variable is required in production.")
 SECRET_KEY = _secret_key
 
-DEBUG = os.getenv("DEBUG", "1") == "1"
+DEBUG = os.getenv("DEBUG", "0") == "1"
 
 _allowed_hosts = os.getenv("ALLOWED_HOSTS", "")
 if _allowed_hosts:
     ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts.split(",") if h.strip()]
 else:
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"] if DEBUG else []
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+
+# Always allow Vercel deployment URLs (preview + production)
+ALLOWED_HOSTS += [".vercel.app"]
+
+# In production, also trust the X-Forwarded-Host set by Vercel's proxy
+USE_X_FORWARDED_HOST = not DEBUG
 
 INSTALLED_APPS = [
     'django.contrib.admin',

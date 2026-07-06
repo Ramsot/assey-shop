@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Trash2, Mail, ToggleLeft, ToggleRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Trash2, Mail, ToggleLeft, ToggleRight, Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 
 interface Subscriber {
   id: string;
@@ -13,10 +13,22 @@ interface Subscriber {
   createdAt: string;
 }
 
+type Toast = { type: "success" | "error"; message: string };
+
 export default function NewsletterPage() {
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [showComposer, setShowComposer] = useState(false);
+  const [campaign, setCampaign] = useState({ title: "", content: "", testEmail: "" });
+  const [sending, setSending] = useState(false);
+  const [sendingTest, setSendingTest] = useState(false);
+  const [toast, setToast] = useState<Toast | null>(null);
+
+  const showToast = (type: "success" | "error", message: string) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3500);
+  };
 
   const fetchSubscribers = async () => {
     setLoading(true);
@@ -50,6 +62,46 @@ export default function NewsletterPage() {
     fetchSubscribers();
   };
 
+  const handleSendTest = async () => {
+    if (!campaign.testEmail) { showToast("error", "Enter a test email address"); return; }
+    if (!campaign.title || !campaign.content) { showToast("error", "Title and content are required"); return; }
+    setSendingTest(true);
+    try {
+      const res = await fetch("/admin/api/newsletter/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: campaign.title, content: campaign.content, testEmail: campaign.testEmail }),
+      });
+      const json = await res.json();
+      if (json.success) showToast("success", json.message);
+      else showToast("error", json.error || "Failed to send test");
+    } catch { showToast("error", "Failed to send test"); }
+    finally { setSendingTest(false); }
+  };
+
+  const handleSendCampaign = async () => {
+    if (!campaign.title || !campaign.content) { showToast("error", "Title and content are required"); return; }
+    const activeCount = subscribers.filter((s) => s.isActive).length;
+    if (!confirm(`Send this campaign to ${activeCount} active subscriber(s)?`)) return;
+    setSending(true);
+    try {
+      const res = await fetch("/admin/api/newsletter/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: campaign.title, content: campaign.content }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        showToast("success", json.message);
+        setCampaign({ title: "", content: "", testEmail: "" });
+        setShowComposer(false);
+      } else {
+        showToast("error", json.error || "Failed to send campaign");
+      }
+    } catch { showToast("error", "Failed to send campaign"); }
+    finally { setSending(false); }
+  };
+
   const container = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.03 } },
@@ -60,14 +112,72 @@ export default function NewsletterPage() {
     show: { opacity: 1, y: 0 },
   };
 
+  const activeCount = subscribers.filter((s) => s.isActive).length;
+
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+      <AnimatePresence>
+        {toast && (
+          <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}
+            className={`fixed top-6 right-6 z-50 flex items-center gap-3 rounded-xl px-5 py-3.5 text-sm font-medium shadow-lg ${toast.type === "success" ? "bg-green-600 text-white" : "bg-red-600 text-white"}`}>
+            {toast.type === "success" ? <CheckCircle className="h-4 w-4" strokeWidth={2} /> : <AlertCircle className="h-4 w-4" strokeWidth={2} />}
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-serif text-3xl font-medium text-ink">Newsletter</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{subscribers.length} subscribers</p>
+          <p className="mt-1 text-sm text-muted-foreground">{subscribers.length} subscribers · {activeCount} active</p>
         </div>
+        <button onClick={() => setShowComposer(!showComposer)}
+          className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 transition-colors">
+          <Send className="h-4 w-4" strokeWidth={1.5} />
+          Send Campaign
+        </button>
       </div>
+
+      <AnimatePresence>
+        {showComposer && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+            className="rounded-xl border border-border bg-paper p-6 space-y-4">
+            <h2 className="font-serif text-lg text-ink flex items-center gap-2">
+              <Mail className="h-4 w-4" strokeWidth={1.5} /> Compose Campaign
+            </h2>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-ink">Subject / Title</label>
+              <input type="text" value={campaign.title} onChange={(e) => setCampaign({ ...campaign, title: e.target.value })}
+                placeholder="Your campaign subject..."
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-ink outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-ink">Content (HTML supported)</label>
+              <textarea rows={8} value={campaign.content} onChange={(e) => setCampaign({ ...campaign, content: e.target.value })}
+                placeholder="Write your email content here..."
+                className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-ink outline-none focus:border-gold focus:ring-1 focus:ring-gold font-mono" />
+            </div>
+            <div className="flex flex-wrap items-end gap-3 border-t border-border pt-4">
+              <div className="flex-1 min-w-[200px]">
+                <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-ink">Test Email</label>
+                <input type="email" value={campaign.testEmail} onChange={(e) => setCampaign({ ...campaign, testEmail: e.target.value })}
+                  placeholder="test@example.com"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-ink outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
+              </div>
+              <button onClick={handleSendTest} disabled={sendingTest}
+                className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-ink hover:bg-accent disabled:opacity-50 transition-colors">
+                {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} /> : <Mail className="h-4 w-4" strokeWidth={1.5} />}
+                Send Test
+              </button>
+              <button onClick={handleSendCampaign} disabled={sending}
+                className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 disabled:opacity-50 transition-colors">
+                {sending ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} /> : <Send className="h-4 w-4" strokeWidth={1.5} />}
+                {sending ? "Sending..." : `Send to ${activeCount} subscribers`}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
