@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASSEY Atelier — Premium Handbags &amp; Luxury Accessories</title>
+    <meta name="description" content="Discover ASSEY Atelier's curated collection of premium leather handbags in champagne gold, cream, and blush. Signature, Evening &amp; Workwear collections." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="ASSEY Atelier — Premium Handbags" />
+    <meta property="og:description" content="Curated luxury handbags crafted for modern silhouettes and timeless polish." />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#fbf6ee" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  </head>
+  <body data-page-home>
+    <div class="grain"></div>
+
+    <div class="announcement">
+      Complimentary shipping on all orders &nbsp;·&nbsp; <a href="/shop/">Shop new arrivals</a>
+    </div>
+
+    <header class="topbar">
+      <div class="container">
+        <nav class="nav">
+          <a class="brand" href="/" aria-label="ASSEY Atelier home">
+            <div class="brand-mark">ASSEY</div>
+            <div class="brand-sub">Atelier</div>
+          </a>
+
+          <nav class="nav-links" aria-label="Primary navigation">
+            <a href="/shop/">Shop</a>
+            <a href="/shop/?collection=signature">Signature</a>
+            <a href="/shop/?collection=evening">Evening</a>
+            <a href="/shop/?collection=workwear">Workwear</a>
+          </nav>
+
+          <div class="nav-actions">
+            <button class="icon-btn" type="button" data-bag aria-label="Bag">
+              <span class="bag-pill">
+                <span style="letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px"
+                  >Bag</span
+                >
+                <span class="bag-count" data-bag-count>0</span>
+              </span>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <div class="hero-card fade-up">
+            <div class="hero-media">
+              <img data-hero-img alt="Luxury handbag campaign" />
+            </div>
+            <div class="hero-overlay"></div>
+            <div class="hero-inner">
+              <div class="fade-up delay1">
+                <div class="kicker">New Season Atelier Edit</div>
+                <h1>Carry quiet luxury, beautifully.</h1>
+                <p class="lead">
+                  A curated collection of premium handbags in champagne gold, cream, and blush —
+                  crafted for modern silhouettes and timeless polish.
+                </p>
+                <div class="cta-row">
+                  <a class="btn primary" href="/shop/">Shop New Arrivals</a>
+                  <a class="btn ghost" href="/shop/?collection=signature">Explore Signature</a>
+                </div>
+              </div>
+
+              <div class="hero-right">
+                <div class="stat fade-up delay2">
+                  <strong>Complimentary</strong>
+                  <span>Shipping + returns</span>
+                </div>
+                <div class="stat fade-up delay3">
+                  <strong>Hardware</strong>
+                  <span>Champagne gold finish</span>
+                </div>
+                <div class="stat fade-up delay4">
+                  <strong>Craft</strong>
+                  <span>Minimal seams, refined edge</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">Collections, styled like an editorial.</h2>
+              <p class="section-desc">
+                Soft tones, clean lines, premium materials — designed to feel composed in any
+                moment.
+              </p>
+            </div>
+            <a class="btn" href="/shop/">View all</a>
+          </div>
+
+          <div class="tile-grid" data-collection-tiles></div>
+        </div>
+      </section>
+
+      <div class="trust-strip">
+        <div class="container">
+          <div class="trust-grid">
+            <div class="trust-item">
+              <div class="trust-icon">✦</div>
+              <div class="trust-text"><strong>Free Shipping</strong><span>On all orders, always</span></div>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon">↩</div>
+              <div class="trust-text"><strong>Free Returns</strong><span>30-day return policy</span></div>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon">✦</div>
+              <div class="trust-text"><strong>Authentic</strong><span>Genuine luxury leather</span></div>
+            </div>
+            <div class="trust-item">
+              <div class="trust-icon">◇</div>
+              <div class="trust-text"><strong>Gift Ready</strong><span>Dust bag &amp; receipt included</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <h2 class="section-title">Best sellers</h2>
+              <p class="section-desc">
+                The pieces customers come back for — effortless shapes with a polished finish.
+              </p>
+            </div>
+            <a class="btn" href="/shop/">Shop best</a>
+          </div>
+
+          <div class="card-grid" data-best-grid></div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="tile-grid">
+            <div class="tile mid fade-up" style="grid-column: span 4; min-height: 180px">
+              <div class="shade"></div>
+              <div class="meta">
+                <div class="cap">Promise</div>
+                <div class="name">Authenticity, always.</div>
+              </div>
+            </div>
+            <div class="tile mid fade-up delay1" style="grid-column: span 4; min-height: 180px">
+              <div class="shade" style="background: linear-gradient(180deg, rgba(255,255,255,0) 10%, rgba(201,178,138,.22) 100%)"></div>
+              <div class="meta">
+                <div class="cap">Care</div>
+                <div class="name">Dust bag included.</div>
+              </div>
+            </div>
+            <div class="tile mid fade-up delay2" style="grid-column: span 4; min-height: 180px">
+              <div class="shade" style="background: linear-gradient(180deg, rgba(255,255,255,0) 10%, rgba(235,195,191,.22) 100%)"></div>
+              <div class="meta">
+                <div class="cap">Support</div>
+                <div class="name">Concierge checkout.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="fine">
+            <div class="brand-mark" style="font-size: 20px">ASSEY</div>
+            <div style="margin-top: 10px">
+              Premium leather handbags crafted for modern silhouettes and timeless polish. Champagne gold, cream, and blush — designed to carry quietly.
+            </div>
+          </div>
+          <div>
+            <p class="foot-title">Shop</p>
+            <div class="foot-links" data-footer-collections>
+              <a href="/shop/">All collections</a>
+            </div>
+          </div>
+          <div>
+            <p class="foot-title">Service</p>
+            <div class="foot-links">
+              <a href="/checkout/">Checkout</a>
+              <a href="/shop/">Shipping</a>
+              <a href="/shop/">Returns</a>
+            </div>
+          </div>
+          <div>
+            <p class="foot-title">Atelier</p>
+            <div class="foot-links">
+              <a href="/shop/">Materials</a>
+              <a href="/shop/">Care guide</a>
+              <a href="/shop/">Contact</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 ASSEY Atelier. All rights reserved.</span>
+        <span><a href="/shop/">Privacy Policy</a> &nbsp;·&nbsp; <a href="/shop/">Terms of Use</a></span>
+      </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" data-cart-overlay></div>
+    <aside class="cart-sidebar" data-cart-sidebar aria-label="Shopping bag">
+      <div class="cart-sidebar-head">
+        <h2>Your Bag</h2>
+        <button class="cart-close" type="button" data-cart-close aria-label="Close bag">✕</button>
+      </div>
+      <div class="cart-sidebar-body" data-cart-body></div>
+      <div class="cart-sidebar-foot">
+        <div class="cart-totals">
+          <div class="cart-tot-row"><span>Subtotal</span><span data-cart-subtotal>—</span></div>
+          <div class="cart-tot-row"><span>Shipping</span><span>Free</span></div>
+          <div class="cart-tot-row total"><span>Total</span><span data-cart-total>—</span></div>
+        </div>
+        <button class="cart-checkout-btn" type="button" data-cart-checkout>Proceed to Checkout</button>
+        <span class="cart-continue" data-cart-close>Continue shopping</span>
+      </div>
+    </aside>
+
+    <div class="toast" data-toast>
+      <div class="dot"></div>
+      <div data-toast-text style="font-size: 13px; letter-spacing: 0.06em">Added</div>
+    </div>
+
+    <script src="{% static 'js/data.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+  </body>
+</html>

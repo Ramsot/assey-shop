@@ -1,0 +1,168 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --cream:   #fbf6ee;
+    --ink:     #1f1b16;
+    --gold:    #c9b28a;
+    --border:  rgba(201,178,138,.22);
+  }
+
+  body.login {
+    background: var(--cream);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; margin: 0;
+  }
+
+  #container { background: transparent; width: 100%; max-width: 380px; padding: 0 20px; }
+
+  .login-brand {
+    text-align: center; margin-bottom: 32px;
+  }
+  .login-brand .mark {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 28px; font-weight: 400; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--ink);
+  }
+  .login-brand .sub {
+    font-size: 11px; letter-spacing: .24em; text-transform: uppercase;
+    color: var(--gold); margin-top: 4px;
+  }
+
+  .login-form {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    padding: 28px 28px 24px;
+    box-shadow: 0 8px 32px rgba(31,27,22,.06);
+  }
+
+  .login-form .title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 22px; font-weight: 400; margin: 0 0 20px;
+    letter-spacing: .04em;
+  }
+
+  .form-row {
+    margin-bottom: 16px;
+  }
+  .form-row label {
+    display: block;
+    font-size: 12px; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .form-row input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    background: var(--cream);
+    font-family: inherit; font-size: 14px; color: var(--ink);
+    outline: none;
+    transition: border-color .22s ease, box-shadow .22s ease;
+  }
+  .form-row input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(201,178,138,.14);
+  }
+
+  .submit-row {
+    margin-top: 22px;
+  }
+  .submit-row input[type="submit"] {
+    width: 100%;
+    background: var(--ink); color: var(--cream);
+    border: none; border-radius: 40px;
+    padding: 14px 0;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .18em; text-transform: uppercase;
+    cursor: pointer;
+    transition: background .22s ease;
+  }
+  .submit-row input[type="submit"]:hover { background: #2e2a24; }
+
+  .errornote {
+    background: rgba(235,195,191,.25);
+    border: 1px solid rgba(235,195,191,.55);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px; color: #8a4a4a;
+    margin-bottom: 16px;
+  }
+
+  .password-reset-link {
+    text-align: center; margin-top: 16px;
+    font-size: 12px; color: rgba(31,27,22,.5);
+  }
+  .password-reset-link a {
+    color: var(--ink); text-decoration: underline;
+    text-underline-offset: 3px; transition: color .22s;
+  }
+  .password-reset-link a:hover { color: var(--gold); }
+
+  /* Hide Django's default header/branding on login */
+  #header, .breadcrumbs { display: none; }
+  #content { padding: 0; }
+  .login .submit-row { padding: 0; }
+</style>
+{% endblock %}
+
+{% block branding %}{% endblock %}
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<div id="content" class="colM">
+  <div class="login-brand">
+    <div class="mark">ASSEY</div>
+    <div class="sub">Atelier Admin</div>
+  </div>
+
+  <div class="login-form">
+    <div class="title">Sign in</div>
+
+    {% if form.errors and not form.non_field_errors %}
+      <p class="errornote">
+        {% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+      </p>
+    {% endif %}
+
+    {% if form.non_field_errors %}
+      {% for error in form.non_field_errors %}
+        <p class="errornote">{{ error }}</p>
+      {% endfor %}
+    {% endif %}
+
+    <div id="content-main">
+      <form action="{{ app_path }}" method="post" id="login-form">
+        {% csrf_token %}
+        <div class="form-row">
+          {{ form.username.errors }}
+          <label for="id_username" class="required">{% translate 'Username:' %}</label>
+          {{ form.username }}
+        </div>
+        <div class="form-row">
+          {{ form.password.errors }}
+          <label for="id_password" class="required">{% translate 'Password:' %}</label>
+          {{ form.password }}
+          <input type="hidden" name="next" value="{{ next }}">
+        </div>
+        {% url 'admin_password_reset' as password_reset_url %}
+        {% if password_reset_url %}
+          <div class="password-reset-link">
+            <a href="{{ password_reset_url }}">{% translate 'Forgotten your password?' %}</a>
+          </div>
+        {% endif %}
+        <div class="submit-row">
+          <input type="submit" value="{% translate 'Log in' %}">
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

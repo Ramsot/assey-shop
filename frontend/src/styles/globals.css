@@ -1,0 +1,103 @@
+/* Tailwind CSS directives - required for build process */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 250 250 248;
+    --foreground: 24 24 26;
+    --paper: 252 252 250;
+    --ink: 18 18 20;
+    --gold: 176 148 107;
+    --stone: 210 207 199;
+    --border: 230 230 228;
+    --ring: 176 148 107;
+    --muted: 244 244 242;
+    --muted-foreground: 96 96 100;
+    --accent: 232 226 216;
+    --accent-foreground: 24 24 26;
+    --font-sans: "Inter", system-ui, sans-serif;
+    --font-serif: "Cormorant Garamond", Georgia, serif;
+  }
+
+  .dark {
+    --background: 18 18 20;
+    --foreground: 250 250 248;
+    --paper: 24 24 26;
+    --ink: 252 252 250;
+    --gold: 196 168 127;
+    --stone: 48 48 52;
+    --border: 40 40 44;
+    --ring: 196 168 127;
+    --muted: 32 32 36;
+    --muted-foreground: 160 160 168;
+    --accent: 34 34 38;
+    --accent-foreground: 250 250 248;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-serif tracking-tight;
+  }
+
+  ::selection {
+    @apply bg-gold/30 text-foreground;
+  }
+}
+
+@layer components {
+  .container-narrow {
+    @apply mx-auto max-w-7xl px-6 lg:px-12;
+  }
+
+  .text-balance {
+    @supports (text-wrap: balance) {
+      text-wrap: balance;
+    }
+  }
+
+  .editorial-border {
+    @apply border border-border/60;
+  }
+}
+
+@layer utilities {
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+  .animation-delay-600 {
+    animation-delay: 600ms;
+  }
+  
+  /* Responsive touch targets */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+  
+  /* High-DPI display optimizations */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .sharp-text {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+}

@@ -1,0 +1,158 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASSEY Atelier — Order Confirmed</title>
+  <meta name="description" content="Your ASSEY Atelier order has been confirmed. Thank you for your purchase." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#fbf6ee" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+
+<body data-page-confirmation>
+  <div class="grain"></div>
+
+  <div class="announcement">
+    Thank you for your order — your bag will be beautifully packaged and dispatched soon.
+  </div>
+
+  <header class="topbar">
+    <div class="container">
+      <nav class="nav">
+        <a class="brand" href="/" aria-label="ASSEY Atelier home">
+          <div class="brand-mark">ASSEY</div>
+          <div class="brand-sub">Atelier</div>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="/">Home</a>
+          <a href="/shop/">Shop</a>
+          <a href="/checkout/">Checkout</a>
+        </nav>
+
+        <div class="nav-actions">
+          <a class="icon-btn" href="/shop/" aria-label="Shop">
+            <span style="letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px">Shop</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="container">
+      <div class="hero-card fade-up" style="padding: 0">
+        <div class="hero-overlay"
+          style="background: linear-gradient(180deg, rgba(251,246,238,.94), rgba(251,246,238,.6), rgba(251,246,238,.92))">
+        </div>
+        <div class="hero-inner" style="min-height: 520px">
+          <div class="fade-up delay1">
+            <div class="kicker">Order confirmed</div>
+            <h1>Thank you — it's on the way.</h1>
+            <p class="lead">
+              Your order has been placed successfully. A confirmation email will be sent shortly.
+            </p>
+
+            <div style="margin-top: 18px; display: grid; gap: 10px; max-width: 520px">
+              <div class="stat">
+                <strong>Order</strong>
+                <span data-order-id>—</span>
+              </div>
+              <div class="stat">
+                <strong>Date</strong>
+                <span data-order-date>—</span>
+              </div>
+              <div class="stat">
+                <strong>Instructions</strong>
+                <span data-order-notes>—</span>
+              </div>
+              <div class="stat">
+                <strong>Total</strong>
+                <span data-order-total>—</span>
+              </div>
+              <div class="stat">
+                <strong>Email</strong>
+                <span data-order-email>—</span>
+              </div>
+            </div>
+
+            <div class="cta-row" style="margin-top: 22px">
+              <a class="btn primary" href="/shop/">Continue shopping</a>
+              <button class="btn ghost" type="button" data-print-order>Print Order</button>
+              <a class="btn ghost" href="/">Back to home</a>
+            </div>
+          </div>
+
+          <div class="hero-right">
+            <div class="stat fade-up delay2">
+              <strong>Packaging</strong>
+              <span>Dust bag + receipt</span>
+            </div>
+            <div class="stat fade-up delay3">
+              <strong>Returns</strong>
+              <span>30-day window</span>
+            </div>
+            <div class="stat fade-up delay4">
+              <strong>Support</strong>
+              <span>Concierge assistance</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="fine">
+          <div class="brand-mark" style="font-size: 20px">ASSEY</div>
+          <div style="margin-top: 10px">
+            Elevated order confirmation layout — calm, premium, and confidently minimal.
+          </div>
+        </div>
+        <div>
+          <p class="foot-title">Shop</p>
+          <div class="foot-links" data-footer-collections>
+            <a href="/shop/">All handbags</a>
+          </div>
+        </div>
+        <div>
+          <p class="foot-title">Order</p>
+          <div class="foot-links">
+            <a href="/checkout/">Checkout</a>
+            <a href="/order-confirmation/">Confirmation</a>
+            <a href="/shop/">Support</a>
+          </div>
+        </div>
+        <div>
+          <p class="foot-title">Atelier</p>
+          <div class="foot-links">
+            <a href="/">Story</a>
+            <a href="/">Care</a>
+            <a href="/">Contact</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 ASSEY Atelier. All rights reserved.</span>
+      <span><a href="/shop/">Privacy</a> &nbsp;·&nbsp; <a href="/shop/">Terms</a></span>
+    </div>
+  </footer>
+
+  <div class="toast" data-toast>
+    <div class="dot"></div>
+    <div data-toast-text style="font-size: 13px; letter-spacing: 0.06em">Added</div>
+  </div>
+
+  <script src="{% static 'js/data.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+
+</html>

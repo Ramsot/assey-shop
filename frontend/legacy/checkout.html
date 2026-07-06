@@ -1,0 +1,299 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASSEY Atelier — Checkout</title>
+  <meta name="description" content="Complete your ASSEY Atelier order. Secure checkout with multiple shipping options." />
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#fbf6ee" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+</head>
+
+<body data-page-checkout>
+  <div class="grain"></div>
+
+  <div class="announcement">
+    Complimentary shipping on all orders &nbsp;·&nbsp; Free 30-day returns
+  </div>
+
+  <header class="topbar">
+    <div class="container">
+      <nav class="nav">
+        <a class="brand" href="/" aria-label="ASSEY Atelier home">
+          <div class="brand-mark">ASSEY</div>
+          <div class="brand-sub">Atelier</div>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="/">Home</a>
+          <a href="/shop/">Shop</a>
+          <a href="/shop/?collection=signature">Signature</a>
+          <a href="/shop/?collection=evening">Evening</a>
+        </nav>
+
+        <div class="nav-actions">
+          <a class="icon-btn" href="/shop/" aria-label="Continue shopping">
+            <span style="letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px">Continue</span>
+          </a>
+          <button class="icon-btn" type="button" data-bag aria-label="Bag">
+            <span class="bag-pill">
+              <span style="letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px">Bag</span>
+              <span class="bag-count" data-bag-count>0</span>
+            </span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <h1 style="margin: 0; font-size: 44px">Checkout</h1>
+          <p class="section-desc" style="margin-top: 8px">
+            A calm, streamlined checkout designed for premium conversion.
+          </p>
+        </div>
+      </div>
+
+      <div class="checkout-grid">
+        <section class="panel">
+          <div class="stepper">
+            <div class="step active">
+              <div class="dot"></div><span>Delivery</span>
+            </div>
+            <div class="step">
+              <div class="dot"></div><span>Payment</span>
+            </div>
+            <div class="step">
+              <div class="dot"></div><span>Review</span>
+            </div>
+          </div>
+
+          <form class="form" data-checkout-form>
+            <div data-step-section="delivery">
+              <div class="field">
+                <div class="label">Email <span style="color:var(--gold)">*</span></div>
+                <input class="input" name="email" type="email" autocomplete="email" placeholder="you@domain.com" required />
+              </div>
+
+              <div class="grid2">
+                <div class="field">
+                  <div class="label">First name <span style="color:var(--gold)">*</span></div>
+                  <input class="input" name="firstName" autocomplete="given-name" placeholder="Ava" required />
+                </div>
+                <div class="field">
+                  <div class="label">Last name <span style="color:var(--gold)">*</span></div>
+                  <input class="input" name="lastName" autocomplete="family-name" placeholder="Monroe" required />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="label">Address <span style="color:var(--gold)">*</span></div>
+                <input class="input" name="address1" autocomplete="street-address" placeholder="Street address" required />
+              </div>
+
+              <div class="grid2">
+                <div class="field">
+                  <div class="label">City <span style="color:var(--gold)">*</span></div>
+                  <input class="input" name="city" autocomplete="address-level2" placeholder="City" required />
+                </div>
+                <div class="field">
+                  <div class="label">Postal <span style="color:var(--gold)">*</span></div>
+                  <input class="input" name="postal" autocomplete="postal-code" placeholder="ZIP / Postal" required />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="label">Country <span style="color:var(--gold)">*</span></div>
+                <input class="input" name="country" autocomplete="country-name" placeholder="Country" required />
+              </div>
+
+              <div class="field">
+                <div class="label">Phone (optional)</div>
+                <input class="input" name="phone" type="tel" autocomplete="tel" placeholder="+1 234 567 8900" />
+              </div>
+
+              <div class="field">
+                <div class="label">Delivery Instructions (optional)</div>
+                <textarea class="input" name="notes" rows="3" placeholder="e.g., Leave at front door, call before delivery..."></textarea>
+              </div>
+            </div>
+
+            <div class="panel" style="border-radius: 22px">
+              <div class="panel-head">
+                <div class="panel-title">Shipping</div>
+                <div
+                  style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(31,27,22,.62)">
+                  Soft delivery
+                </div>
+              </div>
+              <div class="panel-body" style="display: grid; gap: 10px">
+                <label class="radio">
+                  <div>
+                    <div style="font-weight: 700; letter-spacing: 0.08em">Standard</div>
+                    <div class="muted" style="font-size: 12px; margin-top: 6px">3–5 days · Complimentary</div>
+                  </div>
+                  <input type="radio" name="shipping" value="standard" checked />
+                </label>
+                <label class="radio">
+                  <div>
+                    <div style="font-weight: 700; letter-spacing: 0.08em">Priority</div>
+                    <div class="muted" style="font-size: 12px; margin-top: 6px">2–3 days · $14</div>
+                  </div>
+                  <input type="radio" name="shipping" value="priority" />
+                </label>
+                <label class="radio">
+                  <div>
+                    <div style="font-weight: 700; letter-spacing: 0.08em">Express</div>
+                    <div class="muted" style="font-size: 12px; margin-top: 6px">Next day · $28</div>
+                  </div>
+                  <input type="radio" name="shipping" value="express" />
+                </label>
+              </div>
+            </div>
+
+            <div data-step-section="payment">
+              <div class="panel" style="border-radius: 22px">
+                <div class="panel-head">
+                  <div class="panel-title">Payment</div>
+                  <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(31,27,22,.62)">Secure</div>
+                </div>
+                <div class="panel-body" style="display: grid; gap: 12px">
+                  <div class="field">
+                    <div class="label">Card number</div>
+                    <input class="input" name="cardNumber" inputmode="numeric" maxlength="19" placeholder="1234 5678 9012 3456" />
+                  </div>
+                  <div class="grid2">
+                    <div class="field">
+                      <div class="label">Expiry</div>
+                      <input class="input" name="expiry" inputmode="numeric" maxlength="5" placeholder="MM / YY" />
+                    </div>
+                    <div class="field">
+                      <div class="label">CVC</div>
+                      <input class="input" name="cvc" inputmode="numeric" maxlength="4" placeholder="123" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div data-empty class="panel" style="border-radius: 22px; display: none">
+              <div class="panel-body">
+                <div style="font-weight: 700; letter-spacing: 0.08em">Your bag is empty.</div>
+                <p class="muted" style="margin: 10px 0 0; font-size: 13px; line-height: 1.7">
+                  Explore the shop and add a few favorites — the order summary will appear here.
+                </p>
+                <div style="margin-top: 12px">
+                  <a class="btn primary" href="/shop/">Shop now</a>
+                </div>
+              </div>
+            </div>
+
+            <div data-step-section="review">
+              <button class="btn primary" type="submit" style="height: 50px">Place order</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="panel summary">
+          <div class="panel-head">
+            <div class="panel-title">Order</div>
+            <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(31,27,22,.62)">
+              Summary
+            </div>
+          </div>
+          <div class="summary-body">
+            <div class="summary-items" data-order-items></div>
+            <div class="totals">
+              <div class="tot-row"><span>Subtotal</span><strong data-subtotal>—</strong></div>
+              <div class="tot-row"><span>Shipping</span><strong data-shipping>—</strong></div>
+              <div class="tot-row"><span>Estimated tax</span><strong data-tax>—</strong></div>
+              <div class="tot-row" style="font-size: 14px">
+                <span>Total</span><strong data-total>—</strong>
+              </div>
+            </div>
+            <div style="margin-top: 14px; display: flex; gap: 10px">
+              <a class="btn" href="/shop/" style="flex: 1">Add more</a>
+              <a class="btn ghost" href="/" style="flex: 1">Home</a>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="fine">
+          <div class="brand-mark" style="font-size: 20px">ASSEY</div>
+          <div style="margin-top: 10px">
+            Secure, polished checkout layout with elegant typography and rounded luxury controls.
+          </div>
+        </div>
+        <div>
+          <p class="foot-title">Shop</p>
+          <div class="foot-links" data-footer-collections>
+            <a href="/shop/">All handbags</a>
+          </div>
+        </div>
+        <div>
+          <p class="foot-title">Order</p>
+          <div class="foot-links">
+            <a href="/checkout/">Checkout</a>
+            <a href="/order-confirmation/">Confirmation</a>
+            <a href="/shop/">Support</a>
+          </div>
+        </div>
+        <div>
+          <p class="foot-title">Atelier</p>
+          <div class="foot-links">
+            <a href="/">Story</a>
+            <a href="/">Care</a>
+            <a href="/">Contact</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 ASSEY Atelier. All rights reserved.</span>
+      <span><a href="/shop/">Privacy</a> &nbsp;·&nbsp; <a href="/shop/">Terms</a></span>
+    </div>
+  </footer>
+
+  <!-- Cart Sidebar -->
+  <div class="cart-overlay" data-cart-overlay></div>
+  <aside class="cart-sidebar" data-cart-sidebar aria-label="Shopping bag">
+    <div class="cart-sidebar-head">
+      <h2>Your Bag</h2>
+      <button class="cart-close" type="button" data-cart-close aria-label="Close bag">✕</button>
+    </div>
+    <div class="cart-sidebar-body" data-cart-body></div>
+    <div class="cart-sidebar-foot">
+      <div class="cart-totals">
+        <div class="cart-tot-row"><span>Subtotal</span><span data-cart-subtotal>—</span></div>
+        <div class="cart-tot-row"><span>Shipping</span><span>Free</span></div>
+        <div class="cart-tot-row total"><span>Total</span><span data-cart-total>—</span></div>
+      </div>
+      <button class="cart-checkout-btn" type="button" data-cart-checkout>Proceed to Checkout</button>
+      <span class="cart-continue" data-cart-close>Continue shopping</span>
+    </div>
+  </aside>
+
+  <div class="toast" data-toast>
+    <div class="dot"></div>
+    <div data-toast-text style="font-size: 13px; letter-spacing: 0.06em">Added</div>
+  </div>
+
+  <script src="{% static 'js/data.js' %}"></script>
+  <script src="{% static 'js/app.js' %}"></script>
+</body>
+
+</html>

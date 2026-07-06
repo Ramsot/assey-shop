@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ASSEY Atelier — Shop Luxury Handbags</title>
+    <meta name="description" content="Shop ASSEY Atelier's full collection of premium handbags. Filter by collection, material, size and colour. Free standard shipping." />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#fbf6ee" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+  </head>
+  <body data-page-shop>
+    <div class="grain"></div>
+
+    <div class="announcement">
+      Complimentary shipping on all orders &nbsp;·&nbsp; <a href="/shop/">New arrivals just landed</a>
+    </div>
+
+    <header class="topbar">
+      <div class="container">
+        <nav class="nav">
+          <a class="brand" href="/" aria-label="ASSEY Atelier home">
+            <div class="brand-mark">ASSEY</div>
+            <div class="brand-sub">Atelier</div>
+          </a>
+
+          <nav class="nav-links" aria-label="Primary navigation">
+            <a href="/">Home</a>
+            <a href="/shop/?collection=signature">Signature</a>
+            <a href="/shop/?collection=evening">Evening</a>
+            <a href="/shop/?collection=workwear">Workwear</a>
+          </nav>
+
+          <div class="nav-actions">
+            <button class="icon-btn show-mobile" type="button" data-open-filters aria-label="Open filters">
+              <span style="letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px"
+                >Filters</span
+              >
+            </button>
+            <button class="icon-btn" type="button" data-bag aria-label="Bag">
+              <span class="bag-pill">
+                <span style="letter-spacing: 0.14em; text-transform: uppercase; font-size: 12px"
+                  >Bag</span
+                >
+                <span class="bag-count" data-bag-count>0</span>
+              </span>
+            </button>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h1 style="margin: 0; font-size: 44px">Shop</h1>
+            <p class="section-desc" style="margin-top: 8px">
+              Refined silhouettes in champagne, cream, and blush — styled for modern carry.
+            </p>
+          </div>
+          <div class="pill">
+            <span style="font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(31,27,22,.68)"
+              >Sort</span
+            >
+            <select data-sort aria-label="Sort products">
+              <option value="featured">Featured</option>
+              <option value="new">New arrivals</option>
+              <option value="price_asc">Price: low → high</option>
+              <option value="price_desc">Price: high → low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <div class="search-wrap">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+            <input class="search-input" type="search" data-search placeholder="Search handbags…" aria-label="Search products" />
+          </div>
+          <div class="pill">
+            <span style="font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(31,27,22,.68)">Count</span>
+            <span data-product-count style="font-weight: 700; letter-spacing: 0.08em">—</span>
+          </div>
+          <button class="btn show-mobile" type="button" data-open-filters>Filter</button>
+          <button class="btn ghost-ink" type="button" data-clear-filters>Clear</button>
+        </div>
+
+        <div class="layout">
+          <aside class="panel filters-desktop">
+            <div class="panel-head">
+              <div class="panel-title">Refine</div>
+              <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(31,27,22,.62)">
+                Soft edit
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="filter-group">
+                <div class="fg-title">
+                  Collection
+                  <span class="muted" style="font-weight: 600; letter-spacing: 0.06em">3</span>
+                </div>
+                <div class="fg-body">
+                  <label class="check"><span>Signature</span><input type="checkbox" value="signature" data-filter-tag /></label>
+                  <label class="check"><span>Evening</span><input type="checkbox" value="evening" data-filter-tag /></label>
+                  <label class="check"><span>Workwear</span><input type="checkbox" value="workwear" data-filter-tag /></label>
+                  <label class="check"><span>New arrivals</span><input type="checkbox" value="new" data-filter-tag /></label>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <div class="fg-title">
+                  Material
+                  <span class="muted" style="font-weight: 600; letter-spacing: 0.06em">2</span>
+                </div>
+                <div class="fg-body">
+                  <label class="check"><span>Leather</span><input type="checkbox" value="Leather" data-filter-material /></label>
+                  <label class="check"><span>Satin</span><input type="checkbox" value="Satin" data-filter-material /></label>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <div class="fg-title">
+                  Size
+                  <span class="muted" style="font-weight: 600; letter-spacing: 0.06em">5</span>
+                </div>
+                <div class="fg-body">
+                  <label class="check"><span>Mini</span><input type="checkbox" value="Mini" data-filter-size /></label>
+                  <label class="check"><span>Small</span><input type="checkbox" value="Small" data-filter-size /></label>
+                  <label class="check"><span>Medium</span><input type="checkbox" value="Medium" data-filter-size /></label>
+                  <label class="check"><span>Tote</span><input type="checkbox" value="Tote" data-filter-size /></label>
+                  <label class="check"><span>Clutch</span><input type="checkbox" value="Clutch" data-filter-size /></label>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <div class="fg-title">
+                  Color
+                  <span class="muted" style="font-weight: 600; letter-spacing: 0.06em">5</span>
+                </div>
+                <div class="fg-body">
+                  <label class="check"><span>Champagne</span><input type="checkbox" value="Champagne" data-filter-color /></label>
+                  <label class="check"><span>Cream</span><input type="checkbox" value="Cream" data-filter-color /></label>
+                  <label class="check"><span>Blush</span><input type="checkbox" value="Blush" data-filter-color /></label>
+                  <label class="check"><span>Ink</span><input type="checkbox" value="Ink" data-filter-color /></label>
+                  <label class="check"><span>Pearl</span><input type="checkbox" value="Pearl" data-filter-color /></label>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          <section>
+            <div class="card-grid" data-product-grid></div>
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-grid">
+          <div class="fine">
+            <div class="brand-mark" style="font-size: 20px">ASSEY</div>
+            <div style="margin-top: 10px">
+              Premium leather handbags in champagne gold, cream, and blush — crafted for modern silhouettes and timeless polish.
+            </div>
+          </div>
+          <div>
+            <p class="foot-title">Collections</p>
+            <div class="foot-links" data-footer-collections>
+              <a href="/shop/">All collections</a>
+            </div>
+          </div>
+          <div>
+            <p class="foot-title">Checkout</p>
+            <div class="foot-links">
+              <a href="/checkout/">Delivery</a>
+              <a href="/checkout/">Payment</a>
+              <a href="/checkout/">Review</a>
+            </div>
+          </div>
+          <div>
+            <p class="foot-title">Support</p>
+            <div class="foot-links">
+              <a href="/shop/">Shipping</a>
+              <a href="/shop/">Returns</a>
+              <a href="/shop/">Contact</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 ASSEY Atelier. All rights reserved.</span>
+        <span><a href="/shop/">Privacy</a> &nbsp;·&nbsp; <a href="/shop/">Terms</a></span>
+      </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" data-cart-overlay></div>
+    <aside class="cart-sidebar" data-cart-sidebar aria-label="Shopping bag">
+      <div class="cart-sidebar-head">
+        <h2>Your Bag</h2>
+        <button class="cart-close" type="button" data-cart-close aria-label="Close bag">✕</button>
+      </div>
+      <div class="cart-sidebar-body" data-cart-body></div>
+      <div class="cart-sidebar-foot">
+        <div class="cart-totals">
+          <div class="cart-tot-row"><span>Subtotal</span><span data-cart-subtotal>—</span></div>
+          <div class="cart-tot-row"><span>Shipping</span><span>Free</span></div>
+          <div class="cart-tot-row total"><span>Total</span><span data-cart-total>—</span></div>
+        </div>
+        <button class="cart-checkout-btn" type="button" data-cart-checkout>Proceed to Checkout</button>
+        <span class="cart-continue" data-cart-close>Continue shopping</span>
+      </div>
+    </aside>
+
+    <div class="drawer" data-drawer>
+      <div class="drawer-panel">
+        <div class="drawer-top">
+          <strong>Filters</strong>
+          <button class="btn" type="button" data-close-filters>Close</button>
+        </div>
+        <div class="panel" style="border-radius: 22px">
+          <div class="panel-head">
+            <div class="panel-title">Refine</div>
+            <div style="font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(31,27,22,.62)">
+              Soft edit
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="filter-group">
+              <div class="fg-title">Collection</div>
+              <div class="fg-body">
+                <label class="check"><span>Signature</span><input type="checkbox" value="signature" data-filter-tag /></label>
+                <label class="check"><span>Evening</span><input type="checkbox" value="evening" data-filter-tag /></label>
+                <label class="check"><span>Workwear</span><input type="checkbox" value="workwear" data-filter-tag /></label>
+                <label class="check"><span>New arrivals</span><input type="checkbox" value="new" data-filter-tag /></label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <div class="fg-title">Material</div>
+              <div class="fg-body">
+                <label class="check"><span>Leather</span><input type="checkbox" value="Leather" data-filter-material /></label>
+                <label class="check"><span>Satin</span><input type="checkbox" value="Satin" data-filter-material /></label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <div class="fg-title">Size</div>
+              <div class="fg-body">
+                <label class="check"><span>Mini</span><input type="checkbox" value="Mini" data-filter-size /></label>
+                <label class="check"><span>Small</span><input type="checkbox" value="Small" data-filter-size /></label>
+                <label class="check"><span>Medium</span><input type="checkbox" value="Medium" data-filter-size /></label>
+                <label class="check"><span>Tote</span><input type="checkbox" value="Tote" data-filter-size /></label>
+                <label class="check"><span>Clutch</span><input type="checkbox" value="Clutch" data-filter-size /></label>
+              </div>
+            </div>
+            <div class="filter-group">
+              <div class="fg-title">Color</div>
+              <div class="fg-body">
+                <label class="check"><span>Champagne</span><input type="checkbox" value="Champagne" data-filter-color /></label>
+                <label class="check"><span>Cream</span><input type="checkbox" value="Cream" data-filter-color /></label>
+                <label class="check"><span>Blush</span><input type="checkbox" value="Blush" data-filter-color /></label>
+                <label class="check"><span>Ink</span><input type="checkbox" value="Ink" data-filter-color /></label>
+                <label class="check"><span>Pearl</span><input type="checkbox" value="Pearl" data-filter-color /></label>
+              </div>
+            </div>
+            <div style="margin-top: 14px; display: flex; gap: 10px">
+              <button class="btn primary" type="button" data-close-filters style="flex: 1">Apply</button>
+              <button class="btn" type="button" data-clear-filters style="flex: 1">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" data-toast>
+      <div class="dot"></div>
+      <div data-toast-text style="font-size: 13px; letter-spacing: 0.06em">Added</div>
+    </div>
+
+    <script src="{% static 'js/data.js' %}"></script>
+    <script src="{% static 'js/app.js' %}"></script>
+  </body>
+</html>

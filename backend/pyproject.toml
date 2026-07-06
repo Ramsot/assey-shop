@@ -1,0 +1,27 @@
+[project]
+name = "assey-store"
+version = "0.1.0"
+description = "Backend for ASSEY Atelier"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "django",
+    "djangorestframework",
+    "django-cors-headers",
+    "whitenoise",
+    "pytest-django",
+    "gunicorn",
+    "dj-database-url",
+    "python-dotenv",
+    "pymysql",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["assey_store", "cart", "catalog", "checkout"]
+
+[tool.vercel]
+entrypoint = "assey_store/wsgi.py"
