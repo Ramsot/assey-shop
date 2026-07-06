@@ -40,9 +40,12 @@ wheels/
 .installed.cfg
 *.egg
 
-# Django
+# Database files
+*.db
 db.sqlite3
 db.sqlite3-journal
+
+# Django
 media/
 
 # Node (Next.js frontend)
