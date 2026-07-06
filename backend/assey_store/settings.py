@@ -19,7 +19,15 @@ if not _secret_key:
     if os.getenv("DEBUG", "0") == "1":
         _secret_key = "django-insecure-dev-only-replace-in-production"
     else:
-        raise RuntimeError("SECRET_KEY environment variable is required in production.")
+        import secrets as _secrets
+        _secret_key = _secrets.token_hex(50)
+        import warnings as _warnings
+        _warnings.warn(
+            "SECRET_KEY env var is not set — a random key was generated. "
+            "Sessions and signed cookies will be invalidated on every restart. "
+            "Set SECRET_KEY in your environment variables.",
+            stacklevel=1,
+        )
 SECRET_KEY = _secret_key
 
 DEBUG = os.getenv("DEBUG", "0") == "1"
