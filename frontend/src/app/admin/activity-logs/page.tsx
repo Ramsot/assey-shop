@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { User, RefreshCw, Trash2 } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface ActivityEntry {
   id: string;
@@ -18,13 +20,17 @@ export default function ActivityLogsPage() {
   const [activities, setActivities] = useState<ActivityEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [clearing, setClearing] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/activity-logs");
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: ActivityEntry[]; error?: string }>("/admin/api/activity-logs", { signal: controller.signal });
       if (json.success) setActivities(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -32,14 +38,23 @@ export default function ActivityLogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchActivities(); }, []);
+  useEffect(() => { fetchActivities(); }, [fetchActivities]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleClear = async () => {
     if (!confirm("Clear all activity logs?")) return;
-    await fetch("/admin/api/activity-logs", { method: "DELETE" });
-    fetchActivities();
+    setClearing(true);
+    try {
+      await apiFetch("/admin/api/activity-logs", { method: "DELETE" });
+      fetchActivities();
+    } catch {
+      // handle error
+    } finally {
+      setClearing(false);
+    }
   };
 
   const getActionColor = (action: string) => {
@@ -69,14 +84,12 @@ export default function ActivityLogsPage() {
           <p className="mt-1 text-sm text-muted-foreground">{activities.length} activities recorded</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={fetchActivities}
-            className="rounded-xl border border-border px-4 py-2.5 text-sm text-ink hover:bg-accent transition-colors">
-            <RefreshCw className="h-4 w-4" strokeWidth={1.5} />
-          </button>
-          <button onClick={handleClear}
-            className="rounded-xl border border-red-200 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-            Clear
-          </button>
+          <Button variant="outline" size="icon" onClick={fetchActivities} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+          </Button>
+          <Button variant="outline" onClick={handleClear} disabled={clearing || loading} className="border-red-200 text-red-600 hover:bg-red-50">
+            {clearing ? "Clearing..." : "Clear"}
+          </Button>
         </div>
       </div>
 

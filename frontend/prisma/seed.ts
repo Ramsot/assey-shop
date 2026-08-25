@@ -77,19 +77,23 @@ async function main() {
   });
   console.log("  Created admin user:", adminUser.email);
 
-  // Create Supabase Auth user
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
-  const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
-  const { error: signUpError } = await supabase.auth.signUp({
-    email: "admin@asseyatelier.com",
-    password: "admin123",
-    options: { emailRedirectTo: undefined },
-  });
-  if (signUpError && !signUpError.message.includes("already registered")) {
-    console.error("Supabase seed signup error:", signUpError);
+  // Create Supabase Auth user (optional — skipped when Supabase is not configured)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (supabaseUrl && supabaseKey) {
+    const supabase = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false } });
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: "admin@asseyatelier.com",
+      password: "admin123",
+      options: { emailRedirectTo: undefined },
+    });
+    if (signUpError && !signUpError.message.includes("already registered")) {
+      console.error("Supabase seed signup error:", signUpError);
+    } else {
+      console.log("  Created Supabase Auth user");
+    }
   } else {
-    console.log("  Created Supabase Auth user");
+    console.log("  Skipped Supabase Auth user (NEXT_PUBLIC_SUPABASE_* not configured)");
   }
 
   // Create admin profile

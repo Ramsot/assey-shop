@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Mail, MailOpen, Trash2, Calendar } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Message {
   id: string;
@@ -19,13 +21,13 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<Message | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/messages");
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: Message[]; error?: string }>("/admin/api/messages");
       if (json.success) setMessages(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -33,24 +35,35 @@ export default function MessagesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchMessages(); }, []);
+  useEffect(() => { fetchMessages(); }, [fetchMessages]);
 
   const handleMarkRead = async (id: string) => {
-    await fetch(`/admin/api/messages/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isRead: true }),
-    });
-    fetchMessages();
+    try {
+      await apiFetch(`/admin/api/messages/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isRead: true }),
+      });
+      fetchMessages();
+    } catch {
+      // handle error
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this message?")) return;
-    await fetch(`/admin/api/messages/${id}`, { method: "DELETE" });
-    if (selected?.id === id) setSelected(null);
-    fetchMessages();
+    setDeletingId(id);
+    try {
+      await apiFetch(`/admin/api/messages/${id}`, { method: "DELETE" });
+      if (selected?.id === id) setSelected(null);
+      fetchMessages();
+    } catch {
+      // handle error
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const container = {
@@ -82,10 +95,10 @@ export default function MessagesPage() {
               <p className="text-sm text-muted-foreground">From {selected.name} &lt;{selected.email}&gt;</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setSelected(null)}
-                className="rounded-lg border border-border px-4 py-2 text-sm text-ink hover:bg-accent transition-colors">Back</button>
-              <button aria-label="Delete message" onClick={() => handleDelete(selected.id)}
-                className="rounded-lg p-2 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+              <Button variant="outline" onClick={() => setSelected(null)}>Back</Button>
+              <Button variant="ghost" size="icon" aria-label="Delete message" onClick={() => handleDelete(selected.id)} className="text-red-500 hover:text-red-700">
+                <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+              </Button>
             </div>
           </div>
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -134,8 +147,13 @@ export default function MessagesPage() {
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button aria-label="Delete message" onClick={(e) => { e.stopPropagation(); handleDelete(m.id); }}
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                        <Button variant="ghost" size="icon" aria-label="Delete message" onClick={(e) => { e.stopPropagation(); handleDelete(m.id); }} disabled={deletingId === m.id} className="text-red-500 hover:text-red-700">
+                          {deletingId === m.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
                       </td>
                     </motion.tr>
                   ))

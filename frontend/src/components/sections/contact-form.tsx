@@ -21,9 +21,18 @@ export function ContactForm(): JSX.Element {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("submitting");
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setStatus("sent");
-    setForm({ name: "", email: "", subject: "", message: "" });
+    try {
+      const res = await fetch("/api/public/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed to send message");
+      setStatus("sent");
+      setForm({ name: "", email: "", subject: "", message: "" });
+    } catch {
+      setStatus("idle");
+    }
   };
 
   if (status === "sent") {

@@ -32,11 +32,11 @@ export function CheckoutForm(): JSX.Element {
     const data = Object.fromEntries(form.entries()) as Record<string, string>;
 
     // Format order details for WhatsApp
-    const orderDetails = items.map((item) => 
+    const orderDetails = items.map((item) =>
       `${item.name} ${item.color ? `(${item.color})` : ''} × ${item.quantity} = ${formatPrice(item.price * item.quantity)}`
     ).join('%0A');
 
-    const message = encodeURIComponent(
+    const whatsappMessage = encodeURIComponent(
       `*NEW ORDER - ASSEY Atelier*%0A%0A` +
       `*Customer Details:*%0A` +
       `Name: ${data.firstName} ${data.lastName}%0A` +
@@ -52,8 +52,10 @@ export function CheckoutForm(): JSX.Element {
     );
 
     // Save order to database
+    let orderNumber = "";
+    let saveError: string | null = null;
     try {
-      await fetch("/api/public/orders", {
+      const res = await fetch("/api/public/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -77,12 +79,25 @@ export function CheckoutForm(): JSX.Element {
           })),
         }),
       });
+      if (!res.ok) {
+        const text = await res.text();
+        saveError = text || `Failed to save order: ${res.status}`;
+      } else {
+        const json = await res.json();
+        orderNumber = json.data?.orderNumber || `ORD-${Date.now().toString().slice(-6)}`;
+      }
     } catch (err) {
-      console.error("Failed to save order:", err);
+      saveError = err instanceof Error ? err.message : "Failed to save order";
     }
 
-    const orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
-    const whatsappUrl = `https://wa.me/255787820865?text=${message}`;
+    if (saveError) {
+      console.error("Failed to save order:", saveError);
+      setLoading(false);
+      alert("Could not save your order. Please try again or contact us directly.");
+      return;
+    }
+
+    const whatsappUrl = `https://wa.me/255787820865?text=${whatsappMessage}`;
     window.open(whatsappUrl, '_blank');
     clearCart();
     router.push(`/order-confirmation?order_number=${orderNumber}&whatsapp=true`);

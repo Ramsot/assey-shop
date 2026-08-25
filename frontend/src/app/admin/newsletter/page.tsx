@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trash2, Mail, ToggleLeft, ToggleRight, Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Subscriber {
   id: string;
@@ -131,11 +132,11 @@ export default function NewsletterPage() {
           <h1 className="font-serif text-3xl font-medium text-ink">Newsletter</h1>
           <p className="mt-1 text-sm text-muted-foreground">{subscribers.length} subscribers · {activeCount} active</p>
         </div>
-        <button onClick={() => setShowComposer(!showComposer)}
-          className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 transition-colors">
+        <Button onClick={() => setShowComposer(!showComposer)}
+          className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 disabled:opacity-50 transition-colors">
           <Send className="h-4 w-4" strokeWidth={1.5} />
           Send Campaign
-        </button>
+        </Button>
       </div>
 
       <AnimatePresence>
@@ -164,16 +165,14 @@ export default function NewsletterPage() {
                   placeholder="test@example.com"
                   className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-ink outline-none focus:border-gold focus:ring-1 focus:ring-gold" />
               </div>
-              <button onClick={handleSendTest} disabled={sendingTest}
-                className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-ink hover:bg-accent disabled:opacity-50 transition-colors">
+              <Button variant="outline" onClick={handleSendTest} disabled={sendingTest}>
                 {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} /> : <Mail className="h-4 w-4" strokeWidth={1.5} />}
                 Send Test
-              </button>
-              <button onClick={handleSendCampaign} disabled={sending}
-                className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 disabled:opacity-50 transition-colors">
+              </Button>
+              <Button onClick={handleSendCampaign} disabled={sending}>
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" strokeWidth={2} /> : <Send className="h-4 w-4" strokeWidth={1.5} />}
                 {sending ? "Sending..." : `Send to ${activeCount} subscribers`}
-              </button>
+              </Button>
             </div>
           </motion.div>
         )}
@@ -223,12 +222,12 @@ export default function NewsletterPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button aria-label={s.isActive ? "Unsubscribe" : "Resubscribe"} onClick={() => handleToggle(s.id, s.isActive)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent transition-colors">
+                        <Button variant="ghost" size="icon" aria-label={s.isActive ? "Unsubscribe" : "Resubscribe"} onClick={() => handleToggle(s.id, s.isActive)}>
                           {s.isActive ? <ToggleRight className="h-4 w-4 text-green-600" strokeWidth={1.5} /> : <ToggleLeft className="h-4 w-4" strokeWidth={1.5} />}
-                        </button>
-                        <button aria-label="Delete subscriber" onClick={() => handleDelete(s.id)}
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                        </Button>
+                        <Button variant="ghost" size="icon" aria-label="Delete subscriber" onClick={() => handleDelete(s.id)} className="text-red-500 hover:text-red-700">
+                          <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                        </Button>
                       </div>
                     </td>
                   </motion.tr>

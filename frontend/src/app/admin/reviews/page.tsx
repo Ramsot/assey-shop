@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Check, X, Trash2, Star } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Review {
   id: string;
@@ -19,13 +21,17 @@ export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionId, setActionId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchReviews = async () => {
+  const fetchReviews = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/reviews");
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: Review[]; error?: string }>("/admin/api/reviews", { signal: controller.signal });
       if (json.success) setReviews(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -33,32 +39,55 @@ export default function ReviewsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchReviews(); }, []);
+  useEffect(() => { fetchReviews(); }, [fetchReviews]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleApprove = async (id: string) => {
-    await fetch(`/admin/api/reviews/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "approved" }),
-    });
-    fetchReviews();
+    setActionId(id);
+    try {
+      await apiFetch(`/admin/api/reviews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "approved" }),
+      });
+      fetchReviews();
+    } catch {
+      // handle error
+    } finally {
+      setActionId(null);
+    }
   };
 
   const handleReject = async (id: string) => {
-    await fetch(`/admin/api/reviews/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "rejected" }),
-    });
-    fetchReviews();
+    setActionId(id);
+    try {
+      await apiFetch(`/admin/api/reviews/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "rejected" }),
+      });
+      fetchReviews();
+    } catch {
+      // handle error
+    } finally {
+      setActionId(null);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this review?")) return;
-    await fetch(`/admin/api/reviews/${id}`, { method: "DELETE" });
-    fetchReviews();
+    setActionId(id);
+    try {
+      await apiFetch(`/admin/api/reviews/${id}`, { method: "DELETE" });
+      fetchReviews();
+    } catch {
+      // handle error
+    } finally {
+      setActionId(null);
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -140,15 +169,30 @@ export default function ReviewsPage() {
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {r.status !== "approved" && (
-                          <button aria-label="Approve review" onClick={() => handleApprove(r.id)}
-                            className="rounded-lg p-1.5 text-green-600 hover:bg-green-50 transition-colors"><Check className="h-4 w-4" strokeWidth={1.5} /></button>
+                          <Button variant="ghost" size="icon" aria-label="Approve review" onClick={() => handleApprove(r.id)} disabled={actionId === r.id}>
+                            {actionId === r.id ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
+                            ) : (
+                              <Check className="h-4 w-4 text-green-600" strokeWidth={1.5} />
+                            )}
+                          </Button>
                         )}
                         {r.status !== "rejected" && (
-                          <button aria-label="Reject review" onClick={() => handleReject(r.id)}
-                            className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><X className="h-4 w-4" strokeWidth={1.5} /></button>
+                          <Button variant="ghost" size="icon" aria-label="Reject review" onClick={() => handleReject(r.id)} disabled={actionId === r.id}>
+                            {actionId === r.id ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                            ) : (
+                              <X className="h-4 w-4 text-red-500" strokeWidth={1.5} />
+                            )}
+                          </Button>
                         )}
-                        <button aria-label="Delete review" onClick={() => handleDelete(r.id)}
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                        <Button variant="ghost" size="icon" aria-label="Delete review" onClick={() => handleDelete(r.id)} disabled={actionId === r.id} className="text-red-500 hover:text-red-700">
+                          {actionId === r.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
                       </div>
                     </td>
                   </motion.tr>

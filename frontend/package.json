@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "db:deploy": "prisma migrate deploy",
+    "predev": "npm run db:deploy",
+    "prebuild": "npm run db:deploy",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -54,6 +57,7 @@
     "eslint-config-next": "15.1.2",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
+    "tsx": "^4.23.11",
     "typescript": "^5.7.2"
   },
   "engines": {

@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Plus, Edit, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface NavMenu {
   id: string;
@@ -17,13 +20,18 @@ export default function NavigationMenuPage() {
   const [menus, setMenus] = useState<NavMenu[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchMenus = async () => {
+  const fetchMenus = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/navigation");
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: NavMenu[]; error?: string }>("/admin/api/navigation", { signal: controller.signal });
       if (json.success) setMenus(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -31,23 +39,39 @@ export default function NavigationMenuPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchMenus(); }, []);
+  useEffect(() => { fetchMenus(); }, [fetchMenus]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleToggle = async (id: string, current: boolean) => {
-    await fetch(`/admin/api/navigation/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !current }),
-    });
-    fetchMenus();
+    setTogglingId(id);
+    try {
+      await apiFetch(`/admin/api/navigation/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !current }),
+      });
+      fetchMenus();
+    } catch {
+      // handle error
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this menu?")) return;
-    await fetch(`/admin/api/navigation/${id}`, { method: "DELETE" });
-    fetchMenus();
+    setDeletingId(id);
+    try {
+      await apiFetch(`/admin/api/navigation/${id}`, { method: "DELETE" });
+      fetchMenus();
+    } catch {
+      // handle error
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const container = {
@@ -67,11 +91,10 @@ export default function NavigationMenuPage() {
           <h1 className="font-serif text-3xl font-medium text-ink">Navigation Menus</h1>
           <p className="mt-1 text-sm text-muted-foreground">Manage navigation menus</p>
         </div>
-        <button
-          className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 transition-colors">
+        <Button disabled className="opacity-50">
           <Plus className="h-4 w-4" strokeWidth={1.5} />
           Add Menu
-        </button>
+        </Button>
       </div>
 
       {error && (
@@ -109,14 +132,27 @@ export default function NavigationMenuPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent transition-colors"><Edit className="h-4 w-4" strokeWidth={1.5} /></button>
-                        <button onClick={() => handleToggle(m.id, m.isActive)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent transition-colors">
-                          {m.isActive ? <ToggleRight className="h-4 w-4 text-green-600" strokeWidth={1.5} /> : <ToggleLeft className="h-4 w-4" strokeWidth={1.5} />}
-                        </button>
-                        <button onClick={() => handleDelete(m.id)}
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                        <Button variant="ghost" size="icon" aria-label="Edit menu" asChild>
+                          <Link href={`/admin/navigation/${m.id}/edit`}>
+                            <Edit className="h-4 w-4" strokeWidth={1.5} />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" aria-label={m.isActive ? "Deactivate menu" : "Activate menu"} onClick={() => handleToggle(m.id, m.isActive)} disabled={togglingId === m.id}>
+                          {togglingId === m.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                          ) : m.isActive ? (
+                            <ToggleRight className="h-4 w-4 text-green-600" strokeWidth={1.5} />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
+                        <Button variant="ghost" size="icon" aria-label="Delete menu" onClick={() => handleDelete(m.id)} disabled={deletingId === m.id} className="text-red-500 hover:text-red-700">
+                          {deletingId === m.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
                       </div>
                     </td>
                   </motion.tr>

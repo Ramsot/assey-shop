@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { AlertTriangle, Info, XCircle, CheckCircle, RefreshCw, Trash2 } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface LogEntry {
   id: string;
@@ -17,14 +19,18 @@ export default function SystemLogsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [filter, setFilter] = useState("");
+  const [clearing, setClearing] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError("");
     try {
       const params = filter ? `?level=${filter}` : "";
-      const res = await fetch(`/admin/api/system-logs${params}`);
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: LogEntry[]; error?: string }>(`/admin/api/system-logs${params}`, { signal: controller.signal });
       if (json.success) setLogs(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -32,14 +38,23 @@ export default function SystemLogsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter]);
 
-  useEffect(() => { fetchLogs(); }, [filter]);
+  useEffect(() => { fetchLogs(); }, [fetchLogs]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleClearLogs = async () => {
     if (!confirm("Clear all system logs?")) return;
-    await fetch("/admin/api/system-logs", { method: "DELETE" });
-    fetchLogs();
+    setClearing(true);
+    try {
+      await apiFetch("/admin/api/system-logs", { method: "DELETE" });
+      fetchLogs();
+    } catch {
+      // handle error
+    } finally {
+      setClearing(false);
+    }
   };
 
   const getLevelIcon = (level: string) => {
@@ -88,14 +103,12 @@ export default function SystemLogsPage() {
             <option value="info">Info</option>
             <option value="success">Success</option>
           </select>
-          <button onClick={fetchLogs}
-            className="rounded-xl border border-border px-4 py-2.5 text-sm text-ink hover:bg-accent transition-colors">
-            <RefreshCw className="h-4 w-4" strokeWidth={1.5} />
-          </button>
-          <button onClick={handleClearLogs}
-            className="rounded-xl border border-red-200 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
-            Clear Logs
-          </button>
+          <Button variant="outline" size="icon" onClick={fetchLogs} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} strokeWidth={1.5} />
+          </Button>
+          <Button variant="outline" onClick={handleClearLogs} disabled={clearing || loading} className="border-red-200 text-red-600 hover:bg-red-50">
+            {clearing ? "Clearing..." : "Clear Logs"}
+          </Button>
         </div>
       </div>
 

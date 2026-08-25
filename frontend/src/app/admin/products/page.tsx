@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Trash2 } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface ProductItem {
   id: string; name: string; sku: string; price: number; stockQty: number;
@@ -16,28 +18,41 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchProducts = async (q?: string) => {
+  const fetchProducts = useCallback(async (q?: string) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: "1", pageSize: "50" });
       if (q) params.set("search", q);
-      const res = await fetch(`/admin/api/products?${params}`);
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: ProductItem[] }>(`/admin/api/products?${params}`, { signal: controller.signal });
       if (json.success) setProducts(json.data);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // Ignore abort errors
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this product?")) return;
-    await fetch(`/admin/api/products/${id}`, { method: "DELETE" });
-    fetchProducts(search);
+    setDeletingId(id);
+    try {
+      await apiFetch(`/admin/api/products/${id}`, { method: "DELETE" });
+      fetchProducts(search);
+    } catch {
+      // handle error
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -47,10 +62,12 @@ export default function ProductsPage() {
           <h1 className="font-serif text-3xl font-medium text-ink">Products</h1>
           <p className="mt-1 text-sm text-muted-foreground">{products.length} products</p>
         </div>
-        <Link href="/admin/products/new" className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-2.5 text-sm font-medium text-paper hover:bg-ink/90 transition-colors">
-          <Plus className="h-4 w-4" strokeWidth={1.5} />
-          Add Product
-        </Link>
+        <Button asChild>
+          <Link href="/admin/products/new">
+            <Plus className="h-4 w-4" strokeWidth={1.5} />
+            Add Product
+          </Link>
+        </Button>
       </div>
 
       <div className="relative max-w-md">
@@ -110,7 +127,13 @@ export default function ProductsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <Link href={`/admin/products/${p.id}/edit`} className="text-xs text-muted-foreground hover:text-ink">Edit</Link>
-                      <button onClick={() => handleDelete(p.id)} className="text-xs text-red-500 hover:text-red-700">Delete</button>
+                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(p.id)} disabled={deletingId === p.id}>
+                        {deletingId === p.id ? (
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                        )}
+                      </Button>
                     </div>
                   </td>
                 </motion.tr>

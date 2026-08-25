@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { Edit, Trash2, Shield } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Role {
   id: string;
@@ -17,13 +20,17 @@ export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchRoles = async () => {
+  const fetchRoles = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/roles");
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: Role[]; error?: string }>("/admin/api/roles", { signal: controller.signal });
       if (json.success) setRoles(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -31,14 +38,23 @@ export default function RolesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchRoles(); }, []);
+  useEffect(() => { fetchRoles(); }, [fetchRoles]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this role?")) return;
-    await fetch(`/admin/api/roles/${id}`, { method: "DELETE" });
-    fetchRoles();
+    setDeletingId(id);
+    try {
+      await apiFetch(`/admin/api/roles/${id}`, { method: "DELETE" });
+      fetchRoles();
+    } catch {
+      // handle error
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const container = {
@@ -102,11 +118,19 @@ export default function RolesPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent transition-colors"><Edit className="h-4 w-4" strokeWidth={1.5} /></button>
+                        <Button variant="ghost" size="icon" aria-label="Edit role" asChild>
+                          <Link href={`/admin/roles/${r.id}/edit`}>
+                            <Edit className="h-4 w-4" strokeWidth={1.5} />
+                          </Link>
+                        </Button>
                         {!r.isSystem && (
-                          <button onClick={() => handleDelete(r.id)}
-                            className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                          <Button variant="ghost" size="icon" aria-label="Delete role" onClick={() => handleDelete(r.id)} disabled={deletingId === r.id} className="text-red-500 hover:text-red-700">
+                            {deletingId === r.id ? (
+                              <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                            )}
+                          </Button>
                         )}
                       </div>
                     </td>

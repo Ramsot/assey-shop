@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Bell, Info, AlertTriangle, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Notification {
   id: string;
@@ -94,10 +95,9 @@ export default function NotificationsPage() {
           <p className="mt-1 text-sm text-muted-foreground">{unreadCount} unread notifications</p>
         </div>
         {unreadCount > 0 && (
-          <button onClick={handleMarkAllRead}
-            className="rounded-xl border border-border px-4 py-2 text-sm text-ink hover:bg-accent transition-colors">
+          <Button variant="outline" onClick={handleMarkAllRead}>
             Mark All Read
-          </button>
+          </Button>
         )}
       </div>
 

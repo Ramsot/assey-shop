@@ -20,39 +20,49 @@ interface ImageUploaderProps {
 
 export function ImageUploader({ productId, images, onImagesChange }: ImageUploaderProps) {
   const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files?.length) return;
     setUploading(true);
+    setError(null);
 
     try {
       for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append("file", file);
         const res = await fetch("/admin/api/upload", { method: "POST", body: formData });
+        if (!res.ok) {
+          const text = await res.text();
+          throw new Error(text || `Upload failed: ${res.status}`);
+        }
         const json = await res.json();
-        if (json.success) {
-          const newImage: ProductImage = {
-            url: json.data.url,
-            altText: "",
-            isPrimary: images.length === 0,
-            sortOrder: images.length,
-          };
-          onImagesChange([...images, newImage]);
+        if (!json.success) {
+          throw new Error(json.error || "Upload failed");
+        }
+        const newImage: ProductImage = {
+          url: json.data.url,
+          altText: "",
+          isPrimary: images.length === 0,
+          sortOrder: images.length,
+        };
+        onImagesChange([...images, newImage]);
 
-          if (productId) {
-            await fetch(`/admin/api/products/${productId}/images`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(newImage),
-            });
-          }
+        if (productId) {
+          await fetch(`/admin/api/products/${productId}/images`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(newImage),
+          });
         }
       }
-    } catch {}
-    setUploading(false);
-    e.target.value = "";
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
   }, [images, onImagesChange, productId]);
 
   const removeImage = useCallback(async (index: number) => {
@@ -83,6 +93,15 @@ export function ImageUploader({ productId, images, onImagesChange }: ImageUpload
   return (
     <div className="space-y-4">
       <label className="mb-1.5 block text-xs font-semibold uppercase tracking-[0.12em] text-ink">Images</label>
+
+      {error && (
+        <div className="flex items-center justify-between rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <span>{error}</span>
+          <button type="button" onClick={() => setError(null)} className="text-red-500 hover:text-red-700">
+            <X className="h-4 w-4" strokeWidth={1.5} />
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         <AnimatePresence mode="popLayout">

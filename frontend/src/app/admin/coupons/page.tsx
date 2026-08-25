@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Plus, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface Coupon {
   id: string;
@@ -21,13 +23,18 @@ export default function CouponsPage() {
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchCoupons = async () => {
+  const fetchCoupons = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/coupons");
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: Coupon[]; error?: string }>("/admin/api/coupons", { signal: controller.signal });
       if (json.success) setCoupons(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -35,23 +42,39 @@ export default function CouponsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchCoupons(); }, []);
+  useEffect(() => { fetchCoupons(); }, [fetchCoupons]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleToggle = async (id: string, current: boolean) => {
-    await fetch(`/admin/api/coupons/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !current }),
-    });
-    fetchCoupons();
+    setTogglingId(id);
+    try {
+      await apiFetch(`/admin/api/coupons/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !current }),
+      });
+      fetchCoupons();
+    } catch {
+      // handle error
+    } finally {
+      setTogglingId(null);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this coupon?")) return;
-    await fetch(`/admin/api/coupons/${id}`, { method: "DELETE" });
-    fetchCoupons();
+    setDeletingId(id);
+    try {
+      await apiFetch(`/admin/api/coupons/${id}`, { method: "DELETE" });
+      fetchCoupons();
+    } catch {
+      // handle error
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const container = {
@@ -126,12 +149,22 @@ export default function CouponsPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => handleToggle(c.id, c.isActive)} aria-label={c.isActive ? "Deactivate coupon" : "Activate coupon"}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent transition-colors">
-                          {c.isActive ? <ToggleRight className="h-4 w-4 text-green-600" strokeWidth={1.5} /> : <ToggleLeft className="h-4 w-4" strokeWidth={1.5} />}
-                        </button>
-                        <button onClick={() => handleDelete(c.id)} aria-label="Delete coupon"
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                        <Button variant="ghost" size="icon" aria-label={c.isActive ? "Deactivate coupon" : "Activate coupon"} onClick={() => handleToggle(c.id, c.isActive)} disabled={togglingId === c.id}>
+                          {togglingId === c.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
+                          ) : c.isActive ? (
+                            <ToggleRight className="h-4 w-4 text-green-600" strokeWidth={1.5} />
+                          ) : (
+                            <ToggleLeft className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
+                        <Button variant="ghost" size="icon" aria-label="Delete coupon" onClick={() => handleDelete(c.id)} disabled={deletingId === c.id} className="text-red-500 hover:text-red-700">
+                          {deletingId === c.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
                       </div>
                     </td>
                   </motion.tr>

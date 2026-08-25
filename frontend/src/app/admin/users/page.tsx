@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Shield, ShieldOff, Trash2, UserPlus } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface AdminUser {
   id: string;
@@ -19,13 +21,17 @@ export default function UsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [actionId, setActionId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/admin/api/users");
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: AdminUser[]; error?: string }>("/admin/api/users", { signal: controller.signal });
       if (json.success) setUsers(json.data);
       else setError(json.error || "Failed to load");
     } catch {
@@ -33,23 +39,39 @@ export default function UsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleToggleActive = async (id: string, current: boolean) => {
-    await fetch(`/admin/api/users/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ isActive: !current }),
-    });
-    fetchUsers();
+    setActionId(id);
+    try {
+      await apiFetch(`/admin/api/users/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: !current }),
+      });
+      fetchUsers();
+    } catch {
+      // handle error
+    } finally {
+      setActionId(null);
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this user?")) return;
-    await fetch(`/admin/api/users/${id}`, { method: "DELETE" });
-    fetchUsers();
+    setActionId(id);
+    try {
+      await apiFetch(`/admin/api/users/${id}`, { method: "DELETE" });
+      fetchUsers();
+    } catch {
+      // handle error
+    } finally {
+      setActionId(null);
+    }
   };
 
   const container = {
@@ -117,12 +139,22 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => handleToggleActive(u.id, u.isActive)} aria-label={u.isActive ? "Deactivate user" : "Activate user"}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent transition-colors">
-                          {u.isActive ? <Shield className="h-4 w-4 text-green-600" strokeWidth={1.5} /> : <ShieldOff className="h-4 w-4" strokeWidth={1.5} />}
-                        </button>
-                        <button onClick={() => handleDelete(u.id)} aria-label="Delete user"
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                        <Button variant="ghost" size="icon" aria-label={u.isActive ? "Deactivate user" : "Activate user"} onClick={() => handleToggleActive(u.id, u.isActive)} disabled={actionId === u.id}>
+                          {actionId === u.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
+                          ) : u.isActive ? (
+                            <Shield className="h-4 w-4 text-green-600" strokeWidth={1.5} />
+                          ) : (
+                            <ShieldOff className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
+                        <Button variant="ghost" size="icon" aria-label="Delete user" onClick={() => handleDelete(u.id)} disabled={actionId === u.id} className="text-red-500 hover:text-red-700">
+                          {actionId === u.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
                       </div>
                     </td>
                   </motion.tr>

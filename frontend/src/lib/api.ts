@@ -125,6 +125,10 @@ export async function createOrder(payload: Record<string, unknown>): Promise<Rec
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `API request failed: ${res.status}`);
+    }
     return await res.json();
   } catch {
     throw new Error("Failed to create order");
@@ -138,6 +142,10 @@ export async function createAddress(payload: Record<string, unknown>): Promise<R
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `API request failed: ${res.status}`);
+    }
     return await res.json();
   } catch {
     throw new Error("Failed to create address");
@@ -151,6 +159,10 @@ export async function getOrderSummary(payload: Record<string, unknown>): Promise
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || `API request failed: ${res.status}`);
+    }
     return await res.json();
   } catch {
     throw new Error("Failed to get order summary");

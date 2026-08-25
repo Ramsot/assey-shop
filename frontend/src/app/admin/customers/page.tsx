@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Search, Eye, Trash2, Download, Users, ShoppingBag, DollarSign, AlertTriangle } from "lucide-react";
+import { apiFetch } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface CustomerItem {
   id: string; email: string; firstName: string; lastName: string; phone: string;
@@ -20,28 +22,44 @@ export default function CustomersPage() {
   const [totalPages, setTotalPages] = useState(0);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"" | "active" | "suspended">("");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), pageSize: "20" });
       if (search) params.set("search", search);
       if (statusFilter === "suspended") params.set("suspended", "true");
       if (statusFilter === "active") params.set("suspended", "false");
-      const res = await fetch(`/admin/api/customers?${params}`);
-      const json = await res.json();
+      const json = await apiFetch<{ success: boolean; data: CustomerItem[]; total: number; totalPages: number }>(`/admin/api/customers?${params}`, { signal: controller.signal });
       if (json.success) { setCustomers(json.data); setTotal(json.total); setTotalPages(json.totalPages); }
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
-  };
+    } catch {
+      // Ignore abort errors
+    } finally {
+      setLoading(false);
+    }
+  }, [page, statusFilter, search]);
 
-  useEffect(() => { fetchCustomers(); }, [page, statusFilter]);
+  useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
+
+  useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleSearch = (e: React.FormEvent) => { e.preventDefault(); setPage(1); fetchCustomers(); };
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this customer?")) return;
-    await fetch(`/admin/api/customers/${id}`, { method: "DELETE" });
-    fetchCustomers();
+    setDeletingId(id);
+    try {
+      await apiFetch(`/admin/api/customers/${id}`, { method: "DELETE" });
+      fetchCustomers();
+    } catch {
+      // handle error
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleExportCSV = () => {
@@ -77,11 +95,10 @@ export default function CustomersPage() {
           <h1 className="font-serif text-3xl font-medium text-ink">Customers</h1>
           <p className="mt-1 text-sm text-muted-foreground">{total} total customers</p>
         </div>
-        <button onClick={handleExportCSV}
-          className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-medium text-ink hover:bg-accent transition-colors">
+        <Button variant="outline" onClick={handleExportCSV}>
           <Download className="h-4 w-4" strokeWidth={1.5} />
           Export CSV
-        </button>
+        </Button>
       </div>
 
       {customers.length > 0 && (
@@ -111,10 +128,9 @@ export default function CustomersPage() {
         </form>
         <div className="flex gap-1 rounded-xl border border-border bg-paper p-1">
           {(["", "active", "suspended"] as const).map((f) => (
-            <button key={f} onClick={() => { setStatusFilter(f); setPage(1); }}
-              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${statusFilter === f ? "bg-ink text-paper" : "text-muted-foreground hover:text-ink"}`}>
+            <Button key={f} variant="ghost" size="sm" onClick={() => { setStatusFilter(f); setPage(1); }} className={statusFilter === f ? "bg-ink text-paper" : ""}>
               {f === "" ? "All" : f.charAt(0).toUpperCase() + f.slice(1)}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -163,10 +179,16 @@ export default function CustomersPage() {
                     <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(c.createdAt).toLocaleDateString()}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <button aria-label="View customer" onClick={() => router.push(`/admin/customers/${c.id}`)}
-                          className="rounded-lg p-1.5 text-muted-foreground hover:bg-accent transition-colors"><Eye className="h-4 w-4" strokeWidth={1.5} /></button>
-                        <button aria-label="Delete customer" onClick={() => handleDelete(c.id)}
-                          className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 transition-colors"><Trash2 className="h-4 w-4" strokeWidth={1.5} /></button>
+                        <Button variant="ghost" size="icon" aria-label="View customer" onClick={() => router.push(`/admin/customers/${c.id}`)}>
+                          <Eye className="h-4 w-4" strokeWidth={1.5} />
+                        </Button>
+                        <Button variant="ghost" size="icon" aria-label="Delete customer" onClick={() => handleDelete(c.id)} disabled={deletingId === c.id} className="text-red-500 hover:text-red-700">
+                          {deletingId === c.id ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" strokeWidth={1.5} />
+                          )}
+                        </Button>
                       </div>
                     </td>
                   </motion.tr>
@@ -181,10 +203,8 @@ export default function CustomersPage() {
         <div className="flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Page {page} of {totalPages}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(page - 1)}
-              className="rounded-xl border border-border px-4 py-2 text-ink disabled:opacity-50 hover:bg-accent">Previous</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}
-              className="rounded-xl border border-border px-4 py-2 text-ink disabled:opacity-50 hover:bg-accent">Next</button>
+            <Button variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>Previous</Button>
+            <Button variant="outline" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>Next</Button>
           </div>
         </div>
       )}
