@@ -152,7 +152,7 @@ export default function ProfilePage() {
     { id: "preferences" as const, label: "Preferences", icon: Bell },
   ];
 
-  const initials = (userData?.name || userData?.email || "A")[0].toUpperCase();
+  const initials = (userData?.name || userData?.email || "A")?.[0]?.toUpperCase() || "A";
 
   return (
     <div className="max-w-3xl space-y-6">

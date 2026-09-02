@@ -8,10 +8,10 @@ export async function Footer(): Promise<JSX.Element> {
   ]);
 
   const activeCollections = collections.filter((c) => c.isActive);
-  const tagline = settings.store_tagline || settings.site_description || "Premium leather handbags crafted for modern silhouettes and timeless polish.";
+  const tagline = settings.site_tagline || settings.site_description || "Premium leather handbags crafted for modern silhouettes and timeless polish.";
   const copyright = settings.copyright_text || "© 2025 ASSEY Atelier. All rights reserved.";
-  const email = settings.contact_email || settings.site_email || "concierge@asseyatelier.com";
-  const phone = settings.contact_phone || settings.site_phone || "";
+  const email = settings.site_email || "concierge@asseyatelier.com";
+  const phone = settings.site_phone || "";
   const facebook = settings.social_facebook || "";
   const instagram = settings.social_instagram || "";
 

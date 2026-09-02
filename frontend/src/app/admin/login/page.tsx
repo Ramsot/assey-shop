@@ -8,7 +8,7 @@ import { createClient } from "@/utils/supabase/client";
 
 export default function AdminLoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@asseyatelier.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -105,14 +105,8 @@ export default function AdminLoginPage() {
                 "Sign in"
               )}
             </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-xs text-muted-foreground">
-              Default: admin@asseyatelier.com / admin123
-            </p>
-          </div>
-        </div>
+        </form>
+      </div>
       </motion.div>
     </div>
   );

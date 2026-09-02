@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 try:
     import pymysql
     pymysql.install_as_MySQLdb()
-except Exception:
+except ImportError:
     pass
 
 BASE_DIR = Path(__file__).resolve().parent.parent

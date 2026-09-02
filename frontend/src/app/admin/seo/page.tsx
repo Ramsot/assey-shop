@@ -1,36 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Save, Search, Eye } from "lucide-react";
 
+const DEFAULTS = {
+  metaTitle: "ASSEY Atelier — Luxury African Fashion",
+  metaDescription: "Discover ASSEY Atelier, a Tanzanian luxury fashion brand blending traditional African craftsmanship with contemporary design.",
+  ogTitle: "ASSEY Atelier — Luxury African Fashion",
+  ogDescription: "Discover ASSEY Atelier, luxury African fashion brand from Tanzania.",
+  ogImage: "",
+  ogType: "website",
+  twitterCard: "summary_large_image",
+  canonicalUrl: "https://asseyatelier.com",
+  robotsTxt: "index, follow",
+  googleAnalyticsId: "",
+  googleTagManagerId: "",
+  facebookPixelId: "",
+  schemaMarkup: "",
+  sitemapEnabled: "true",
+};
+
 export default function SEOPage() {
-  const [form, setForm] = useState({
-    metaTitle: "ASSEY Atelier — Luxury African Fashion",
-    metaDescription: "Discover ASSEY Atelier, a Tanzanian luxury fashion brand blending traditional African craftsmanship with contemporary design.",
-    ogTitle: "ASSEY Atelier — Luxury African Fashion",
-    ogDescription: "Discover ASSEY Atelier, luxury African fashion brand from Tanzania.",
-    ogImage: "",
-    ogType: "website",
-    twitterCard: "summary_large_image",
-    canonicalUrl: "https://asseyatelier.com",
-    robotsTxt: "index, follow",
-    googleAnalyticsId: "",
-    googleTagManagerId: "",
-    facebookPixelId: "",
-    schemaMarkup: "",
-    sitemapEnabled: true,
-  });
+  const [form, setForm] = useState<Record<string, string>>(DEFAULTS);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/admin/api/settings?group=seo")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.seo) {
+          setForm((prev) => ({ ...prev, ...json.data.seo }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setError("");
+    try {
+      const bulk = Object.entries(form).map(([key, value]) => ({
+        key, value, group: "seo",
+      }));
+      const res = await fetch("/admin/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bulk }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Failed to save");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const container = {
@@ -138,7 +167,7 @@ export default function SEOPage() {
               className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-ink outline-none focus:border-gold focus:ring-1 focus:ring-gold font-mono" />
           </div>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={form.sitemapEnabled} onChange={(e) => setForm({ ...form, sitemapEnabled: e.target.checked })}
+            <input type="checkbox" checked={form.sitemapEnabled === "true"} onChange={(e) => setForm({ ...form, sitemapEnabled: String(e.target.checked) })}
               className="rounded border-border text-ink focus:ring-gold" />
             <span className="text-sm text-ink">Enable XML Sitemap</span>
           </label>
@@ -151,6 +180,7 @@ export default function SEOPage() {
             {saving ? "Saving..." : "Save SEO Settings"}
           </button>
           {saved && <span className="text-xs text-green-600">Settings saved!</span>}
+          {error && <span className="text-xs text-red-500">{error}</span>}
         </div>
       </motion.form>
     </motion.div>

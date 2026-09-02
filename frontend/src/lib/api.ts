@@ -1,5 +1,6 @@
 import { type Collection, type Product } from "@/types";
 import { fallbackCollections, fallbackProducts } from "@/lib/fallback-data";
+import { type ApiResponse, type AdminUser } from "@/lib/admin-types";
 import {
   getCollections as getLocalCollections,
   getProducts as getLocalProducts,
@@ -177,6 +178,33 @@ export async function getOrderByNumber(orderNumber: string): Promise<Record<stri
   } catch {
     return null;
   }
+}
+
+export interface UpdateUserInput {
+  name?: string;
+  email?: string;
+  roleId?: string;
+  isActive?: boolean;
+  avatar?: string;
+  password?: string;
+}
+
+export async function updateUser(id: string, input: UpdateUserInput): Promise<AdminUser> {
+  const res = await fetch(`/admin/api/users/${encodeURIComponent(id)}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  let json: ApiResponse<AdminUser>;
+  try {
+    json = (await res.json()) as ApiResponse<AdminUser>;
+  } catch {
+    throw new Error(`Failed to update user: ${res.status} ${res.statusText}`);
+  }
+  if (!res.ok || !json.success || !json.data) {
+    throw new Error(json.error || `Failed to update user: ${res.status} ${res.statusText}`);
+  }
+  return json.data;
 }
 
 interface ColorOption {

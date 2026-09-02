@@ -121,7 +121,7 @@ export default function NotificationsPage() {
             const Icon = getIcon(n.type);
             return (
               <motion.div key={n.id} variants={item}
-                className={`rounded-xl border ${n.isRead ? "border-border bg-paper" : "border-gold/30 bg-paper"} p-4 transition-all hover:shadow-sm`}
+                className={`group rounded-xl border ${n.isRead ? "border-border bg-paper" : "border-gold/30 bg-paper"} p-4 transition-all hover:shadow-sm`}
                 onClick={() => !n.isRead && handleMarkRead(n.id)}>
                 <div className="flex items-start gap-3">
                   <div className={`rounded-lg p-2 ${getIconColor(n.type)}`}>

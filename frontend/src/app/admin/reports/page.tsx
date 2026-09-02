@@ -4,6 +4,17 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Download, FileText, BarChart3, TrendingUp, Users, ShoppingBag, DollarSign, Calendar } from "lucide-react";
 
+const SENSITIVE_EXPORT_FIELDS = new Set([
+  "password", "passwordHash", "password_hash",
+  "token", "resetToken", "reset_token",
+  "apiKey", "api_key", "secret",
+  "recoveryCodes", "recovery_codes",
+  "twoFactorSecret", "two_factor_secret",
+  "payment_token", "paymentToken",
+  "session_token", "sessionToken",
+  "twoFactorSecret", "twoFactorSecret",
+]);
+
 const reportDefs = [
   { id: "orders", label: "Order Report", description: "All orders with status, payment, and totals", icon: ShoppingBag },
   { id: "customers", label: "Customer Report", description: "All customers with spend, orders, and status", icon: Users },
@@ -39,7 +50,9 @@ export default function ReportsPage() {
       if (!json.success || !json.data?.length) { setGenerating(null); return; }
 
       const rows = json.data;
-      const headers = Object.keys(rows[0]).filter((k) => !["_count", "__v"].includes(k));
+      const headers = Object.keys(rows[0] || {}).filter(
+        (k) => !SENSITIVE_EXPORT_FIELDS.has(k) && !["_count", "__v"].includes(k)
+      );
       const csv = [
         headers.join(","),
         ...rows.map((row: Record<string, unknown>) =>

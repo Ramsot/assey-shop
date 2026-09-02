@@ -22,8 +22,16 @@ class Category(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = self._unique_slug(slugify(self.name))
         return super().save(*args, **kwargs)
+
+    def _unique_slug(self, slug):
+        unique_slug = slug
+        counter = 1
+        while Category.objects.filter(slug=unique_slug).exclude(pk=self.pk).exists():
+            unique_slug = f"{slug}-{counter}"
+            counter += 1
+        return unique_slug
 
     def __str__(self):
         return self.name
@@ -78,8 +86,16 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = self._unique_slug(slugify(self.name))
         super().save(*args, **kwargs)
+
+    def _unique_slug(self, slug):
+        unique_slug = slug
+        counter = 1
+        while Product.objects.filter(slug=unique_slug).exclude(pk=self.pk).exists():
+            unique_slug = f"{slug}-{counter}"
+            counter += 1
+        return unique_slug
 
     def __str__(self):
         return f"{self.sku} - {self.name}"

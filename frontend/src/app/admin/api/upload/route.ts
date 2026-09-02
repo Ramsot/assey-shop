@@ -3,11 +3,15 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { supabaseAdmin } from "@/utils/supabase/admin";
+import { getCurrentUser } from "@/lib/admin-auth";
 
 const SUPABASE_BUCKET = "product-images";
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     if (!file) return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 });

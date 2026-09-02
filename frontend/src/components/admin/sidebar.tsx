@@ -170,7 +170,7 @@ export function AdminSidebar({ user }: SidebarProps) {
             className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-ink transition-all"
           >
             <div className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-paper text-[10px] font-semibold">
-              {user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+              {(user.name || "A").split(" ").map((n) => n?.[0] || "").join("").toUpperCase().slice(0, 2)}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-ink truncate">{user.name}</p>

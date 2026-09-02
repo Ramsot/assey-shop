@@ -19,14 +19,14 @@ const cormorant = Cormorant_Garamond({
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getWebsiteSettings().catch(() => ({} as Record<string, string>));
-  const title = settings.store_name
-    ? `${settings.store_name} — Premium Handbags & Luxury Accessories`
+  const title = settings.site_name
+    ? `${settings.site_name} — Premium Handbags & Luxury Accessories`
     : "ASSEY Atelier — Premium Handbags & Luxury Accessories";
-  const description = settings.store_description
-    ? settings.store_description
+  const description = settings.site_description
+    ? settings.site_description
     : "Discover ASSEY Atelier's curated collection of premium leather handbags.";
-  const keywords = settings.store_keywords
-    ? settings.store_keywords.split(",").map((k: string) => k.trim())
+  const keywords = settings.site_keywords
+    ? settings.site_keywords.split(",").map((k: string) => k.trim())
     : ["handbags", "luxury", "leather", "atelier", "fashion", "accessories"];
 
   return {
@@ -34,7 +34,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     keywords,
     openGraph: {
-      title: settings.store_name ? `${settings.store_name} — Premium Handbags` : "ASSEY Atelier — Premium Handbags",
+      title: settings.site_name ? `${settings.site_name} — Premium Handbags` : "ASSEY Atelier — Premium Handbags",
       description,
       type: "website",
     },

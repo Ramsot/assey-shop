@@ -4,6 +4,7 @@ import { Navbar } from "@/components/common/navbar";
 import { Footer } from "@/components/common/footer";
 import { getOrderByNumber } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { PrintButton } from "@/components/common/print-button";
 import { formatPrice } from "@/lib/utils";
 
 interface OrderConfirmationPageProps {
@@ -37,7 +38,7 @@ export default async function OrderConfirmationPage({
               {whatsapp ? "Order sent via WhatsApp" : "Order confirmed"}
             </span>
             <h1 className="mt-4 font-serif text-4xl font-medium text-ink md:text-5xl">
-              {whatsapp ? "Order sent to WhatsApp" : "Thank you — it&apos;s on the way."}
+              {whatsapp ? "Order sent to WhatsApp" : "              Thank you — it's on the way."}
             </h1>
             <p className="mt-4 text-muted-foreground">
               {whatsapp 
@@ -72,9 +73,7 @@ export default async function OrderConfirmationPage({
                   </a>
                 </Button>
               )}
-              <Button variant="ghost" onClick={() => window.print()}>
-                Print order
-              </Button>
+              <PrintButton />
             </div>
           </div>
         </div>

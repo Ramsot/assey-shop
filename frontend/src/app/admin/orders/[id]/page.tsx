@@ -101,6 +101,15 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const cfg = statusConfig[order.status] || statusConfig.pending;
   const StatusIconComponent = cfg.icon;
 
+  const statusRingColor: Record<string, string> = {
+    pending: "ring-gray-500/30",
+    processing: "ring-blue-500/30",
+    shipped: "ring-purple-500/30",
+    delivered: "ring-green-500/30",
+    cancelled: "ring-red-500/30",
+    refunded: "ring-gray-500/30",
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -147,7 +156,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     disabled={!isAllowed || updating}
                     className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-medium transition-all ${
                       isCurrent
-                        ? `${sc.bg} ${sc.color} ring-2 ring-offset-2 ring-${s === "delivered" ? "green" : s === "cancelled" ? "red" : s === "shipped" ? "purple" : s === "processing" ? "blue" : "gray"}-500/30`
+                        ? `${sc.bg} ${sc.color} ring-2 ring-offset-2 ${statusRingColor[s] || "ring-gray-500/30"}`
                         : isAllowed
                           ? "border border-border text-muted-foreground hover:bg-accent hover:text-ink"
                           : "border border-border/50 text-muted-foreground/30 cursor-not-allowed"

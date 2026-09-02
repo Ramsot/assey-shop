@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
+import { updateUser } from "@/lib/api";
 
 interface Role {
   id: string;
@@ -55,20 +56,12 @@ export default function EditUserPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`/admin/api/users/${params.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const json = await res.json();
-      if (json.success) {
-        router.push("/admin/users");
-        router.refresh();
-      } else {
-        alert(json.error || "Failed to update user");
-      }
-    } catch { alert("Error updating user"); }
-    finally { setLoading(false); }
+      await updateUser(String(params.id), form);
+      router.push("/admin/users");
+      router.refresh();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error updating user");
+    } finally { setLoading(false); }
   };
 
   if (fetching) return (

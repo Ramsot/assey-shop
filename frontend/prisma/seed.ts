@@ -107,6 +107,9 @@ async function main() {
   const settings = [
     { key: "site_name", value: "ASSEY Atelier", group: "general" },
     { key: "site_description", value: "Premium handbags & luxury accessories", group: "general" },
+    { key: "site_keywords", value: "handbags,luxury,leather,atelier,fashion,accessories", group: "general" },
+    { key: "site_tagline", value: "Premium leather handbags crafted for modern silhouettes and timeless polish.", group: "general" },
+    { key: "copyright_text", value: "© 2025 ASSEY Atelier. All rights reserved.", group: "general" },
     { key: "site_email", value: "concierge@asseyatelier.com", group: "contact" },
     { key: "site_phone", value: "+255 787 820 865", group: "contact" },
     { key: "site_address", value: "Dar es Salaam, Tanzania", group: "contact" },
@@ -116,6 +119,19 @@ async function main() {
     { key: "maintenance_mode", value: "false", group: "general" },
     { key: "social_instagram", value: "https://instagram.com/asseyatelier", group: "social" },
     { key: "social_whatsapp", value: "https://wa.me/255787820865", group: "social" },
+    { key: "social_facebook", value: "https://facebook.com/asseyatelier", group: "social" },
+    { key: "social_twitter", value: "https://x.com/asseyatelier", group: "social" },
+    { key: "site_url", value: "https://asseyatelier.com", group: "general" },
+    { key: "favicon", value: "", group: "appearance" },
+    { key: "logo_url", value: "", group: "appearance" },
+    { key: "about_us", value: "Welcome to ASSEY Atelier, where African heritage meets contemporary luxury fashion.", group: "content" },
+    { key: "shipping_info", value: "We offer worldwide shipping with tracking on all orders.", group: "content" },
+    { key: "returns_policy", value: "We accept returns within 14 days of delivery for unused items.", group: "content" },
+    { key: "faq_content", value: "Frequently asked questions about our products and services.", group: "content" },
+    { key: "terms_conditions", value: "Please read these terms carefully before using our website.", group: "content" },
+    { key: "privacy_policy", value: "Your privacy is important to us. This policy outlines how we handle your data.", group: "content" },
+    { key: "hero_text", value: "Discover the art of African luxury fashion.", group: "content" },
+    { key: "footer_text", value: "© 2026 ASSEY Atelier. All rights reserved.", group: "content" },
   ];
 
   for (const setting of settings) {

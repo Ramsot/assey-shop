@@ -14,44 +14,34 @@ const settingsGroups: SettingsGroup[] = [
   {
     name: "General", icon: Globe,
     fields: [
-      { key: "siteName", label: "Site Name", type: "text", placeholder: "ASSEY Atelier" },
-      { key: "siteDescription", label: "Site Description", type: "textarea", placeholder: "Luxury African fashion brand" },
-      { key: "siteUrl", label: "Site URL", type: "text", placeholder: "https://asseyatelier.com" },
+      { key: "site_name", label: "Site Name", type: "text", placeholder: "ASSEY Atelier" },
+      { key: "site_description", label: "Site Description", type: "textarea", placeholder: "Luxury African fashion brand" },
+      { key: "site_url", label: "Site URL", type: "text", placeholder: "https://asseyatelier.com" },
+      { key: "site_keywords", label: "Keywords", type: "text", placeholder: "handbags, luxury, leather" },
     ],
   },
   {
     name: "Contact", icon: Mail,
     fields: [
-      { key: "contactEmail", label: "Contact Email", type: "email", placeholder: "info@asseyatelier.com" },
-      { key: "contactPhone", label: "Phone", type: "text", placeholder: "+255 XXX XXX XXX" },
-      { key: "contactAddress", label: "Address", type: "textarea", placeholder: "Dar es Salaam, Tanzania" },
+      { key: "site_email", label: "Contact Email", type: "email", placeholder: "info@asseyatelier.com" },
+      { key: "site_phone", label: "Phone", type: "text", placeholder: "+255 XXX XXX XXX" },
+      { key: "site_address", label: "Address", type: "textarea", placeholder: "Dar es Salaam, Tanzania" },
     ],
   },
   {
     name: "Commerce", icon: DollarSign,
     fields: [
-      { key: "currency", label: "Currency", type: "text", placeholder: "TZS" },
-      { key: "currencySymbol", label: "Currency Symbol", type: "text", placeholder: "TSh" },
-      { key: "timezone", label: "Timezone", type: "text", placeholder: "Africa/Dar_es_Salaam" },
-      { key: "locale", label: "Locale", type: "text", placeholder: "en-TZ" },
+      { key: "site_currency", label: "Currency", type: "text", placeholder: "TZS" },
+      { key: "site_timezone", label: "Timezone", type: "text", placeholder: "Africa/Dar_es_Salaam" },
+      { key: "site_language", label: "Language", type: "text", placeholder: "en" },
     ],
   },
   {
     name: "Social Links", icon: Twitter,
     fields: [
-      { key: "twitterUrl", label: "Twitter / X", type: "url", placeholder: "https://x.com/asseyatelier" },
-      { key: "instagramUrl", label: "Instagram", type: "url", placeholder: "https://instagram.com/asseyatelier" },
-      { key: "facebookUrl", label: "Facebook", type: "url", placeholder: "https://facebook.com/asseyatelier" },
-      { key: "linkedinUrl", label: "LinkedIn", type: "url", placeholder: "https://linkedin.com/company/asseyatelier" },
-    ],
-  },
-  {
-    name: "Regional", icon: MapPin,
-    fields: [
-      { key: "country", label: "Country", type: "text", placeholder: "Tanzania" },
-      { key: "language", label: "Language", type: "text", placeholder: "en" },
-      { key: "weightUnit", label: "Weight Unit", type: "text", placeholder: "kg" },
-      { key: "dimensionUnit", label: "Dimension Unit", type: "text", placeholder: "cm" },
+      { key: "social_twitter", label: "Twitter / X", type: "url", placeholder: "https://x.com/asseyatelier" },
+      { key: "social_instagram", label: "Instagram", type: "url", placeholder: "https://instagram.com/asseyatelier" },
+      { key: "social_facebook", label: "Facebook", type: "url", placeholder: "https://facebook.com/asseyatelier" },
     ],
   },
 ];
@@ -72,8 +62,13 @@ export default function WebsiteSettingsPage() {
       .then((r) => r.json())
       .then((res) => {
         if (res.success) {
-          const merged = { ...defaults, ...Object.fromEntries(res.data.map((s: { key: string; value: string }) => [s.key, s.value])) };
-          setForm(merged);
+          const flat: Record<string, string> = {};
+          for (const groupData of Object.values(res.data as Record<string, Record<string, string | null>>)) {
+            for (const [k, v] of Object.entries(groupData)) {
+              flat[k] = v ?? "";
+            }
+          }
+          setForm({ ...defaults, ...flat });
         } else setError(res.error || "Failed to load");
       })
       .catch(() => setError("Failed to load settings"))
@@ -83,17 +78,20 @@ export default function WebsiteSettingsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError("");
     try {
-      const payload = Object.entries(form).map(([key, value]) => ({ key, value }));
-      await fetch("/admin/api/settings", {
-        method: "PUT",
+      const bulk = Object.entries(form).map(([key, value]) => ({ key, value }));
+      const res = await fetch("/admin/api/settings", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ bulk }),
       });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to save settings");
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
-      alert("Error saving settings");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -160,6 +158,7 @@ export default function WebsiteSettingsPage() {
             {saving ? "Saving..." : "Save All Settings"}
           </button>
           {saved && <span className="text-xs text-green-600">All settings saved!</span>}
+          {error && <span className="text-xs text-red-500">{error}</span>}
         </div>
       </motion.form>
     </motion.div>

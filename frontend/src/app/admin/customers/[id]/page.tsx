@@ -41,7 +41,7 @@ export default function CustomerDetailPage({ params }: { params: Promise<{ id: s
         </Link>
         <div className="flex items-center gap-4 flex-1">
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent text-lg font-medium text-ink">
-            {(customer.firstName?.[0] || customer.email[0]).toUpperCase()}
+            {(customer.firstName?.[0] || customer.email?.[0] || "A").toUpperCase()}
           </div>
           <div>
             <h1 className="font-serif text-3xl font-medium text-ink">{customer.firstName} {customer.lastName}</h1>

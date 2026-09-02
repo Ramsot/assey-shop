@@ -161,7 +161,7 @@ export default function CustomersPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-xs font-medium text-ink">
-                          {(c.firstName?.[0] || c.email[0]).toUpperCase()}
+                          {(c.firstName?.[0] || c.email?.[0] || "A").toUpperCase()}
                         </div>
                         <span className="font-medium text-ink">{c.firstName} {c.lastName}</span>
                       </div>

@@ -18,6 +18,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -38,16 +39,21 @@ export default function ProductsPage() {
     }
   }, []);
 
-  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  useEffect(() => { fetchProducts(debouncedSearch); }, [fetchProducts, debouncedSearch]);
 
   useEffect(() => () => { abortRef.current?.abort(); }, []);
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this product?")) return;
     setDeletingId(id);
     try {
       await apiFetch(`/admin/api/products/${id}`, { method: "DELETE" });
-      fetchProducts(search);
+      fetchProducts(debouncedSearch);
     } catch {
       // handle error
     } finally {
@@ -75,7 +81,7 @@ export default function ProductsPage() {
         <input
           placeholder="Search products..."
           value={search}
-          onChange={(e) => { setSearch(e.target.value); fetchProducts(e.target.value); }}
+          onChange={(e) => setSearch(e.target.value)}
           className="w-full rounded-xl border border-border bg-background py-2.5 pl-10 pr-4 text-sm text-ink outline-none focus:border-gold focus:ring-1 focus:ring-gold"
         />
       </div>
@@ -103,7 +109,7 @@ export default function ProductsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-stone overflow-hidden">
-                        {p.images[0] && <img src={p.images[0].url} alt="" className="h-full w-full object-cover" />}
+                        {p.images.length > 0 && <img src={p.images[0].url} alt="" className="h-full w-full object-cover" />}
                       </div>
                       <div>
                         <Link href={`/admin/products/${p.id}/edit`} className="font-medium text-ink hover:underline">{p.name}</Link>

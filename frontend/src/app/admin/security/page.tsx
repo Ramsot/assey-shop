@@ -1,38 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Save, Shield, Key, Clock, Lock } from "lucide-react";
 
+const DEFAULTS = {
+  passwordMinLength: "8",
+  passwordRequireUppercase: true,
+  passwordRequireNumbers: true,
+  passwordRequireSymbols: false,
+  maxLoginAttempts: "5",
+  lockoutDuration: "15",
+  sessionTimeout: "60",
+  twoFactorEnabled: false,
+  twoFactorMethod: "app",
+  ipWhitelist: "",
+  allowedDomains: "",
+  rateLimiting: true,
+  rateLimitRequests: "100",
+  rateLimitWindow: "15",
+  forceHttps: true,
+  hstsEnabled: true,
+};
+
 export default function SecurityPage() {
-  const [form, setForm] = useState({
-    passwordMinLength: "8",
-    passwordRequireUppercase: true,
-    passwordRequireNumbers: true,
-    passwordRequireSymbols: false,
-    maxLoginAttempts: "5",
-    lockoutDuration: "15",
-    sessionTimeout: "60",
-    twoFactorEnabled: false,
-    twoFactorMethod: "app",
-    ipWhitelist: "",
-    allowedDomains: "",
-    rateLimiting: true,
-    rateLimitRequests: "100",
-    rateLimitWindow: "15",
-    forceHttps: true,
-    hstsEnabled: true,
-  });
+  const [form, setForm] = useState<typeof DEFAULTS>(DEFAULTS);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/admin/api/settings?group=security")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.security) {
+          const apiData = json.data.security as Record<string, string>;
+          setForm((prev) => {
+            const merged = { ...prev };
+            for (const [k, v] of Object.entries(apiData)) {
+              const key = k as keyof typeof DEFAULTS;
+              const def = DEFAULTS[key];
+              (merged as Record<string, unknown>)[key] =
+                typeof def === "boolean" ? v === "true" : v;
+            }
+            return merged;
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setError("");
+    try {
+      const bulk = Object.entries(form).map(([key, value]) => ({
+        key,
+        value: typeof value === "boolean" ? String(value) : value,
+        group: "security",
+      }));
+      const res = await fetch("/admin/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bulk }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Failed to save");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const container = {
@@ -174,6 +215,7 @@ export default function SecurityPage() {
             {saving ? "Saving..." : "Save Security Settings"}
           </button>
           {saved && <span className="text-xs text-green-600">Settings saved!</span>}
+          {error && <span className="text-xs text-red-500">{error}</span>}
         </div>
       </motion.form>
     </motion.div>

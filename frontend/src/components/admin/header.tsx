@@ -59,9 +59,9 @@ export function AdminHeader({ user }: HeaderProps) {
     router.refresh();
   };
 
-  const initials = user.name
+  const initials = (user.name || "A")
     .split(" ")
-    .map((n) => n[0])
+    .map((n) => n?.[0] || "")
     .join("")
     .toUpperCase()
     .slice(0, 2);

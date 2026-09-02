@@ -22,7 +22,15 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionId, setActionId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    fetch("/admin/api/auth/me")
+      .then((r) => r.json())
+      .then((res) => { if (res.success) setCurrentUserId(res.data.id); })
+      .catch(() => {});
+  }, []);
 
   const fetchUsers = useCallback(async () => {
     abortRef.current?.abort();
@@ -46,6 +54,9 @@ export default function UsersPage() {
   useEffect(() => () => { abortRef.current?.abort(); }, []);
 
   const handleToggleActive = async (id: string, current: boolean) => {
+    if (id === currentUserId) {
+      if (!confirm("You cannot deactivate your own account. Continue anyway?")) return;
+    }
     setActionId(id);
     try {
       await apiFetch(`/admin/api/users/${id}`, {
@@ -62,6 +73,10 @@ export default function UsersPage() {
   };
 
   const handleDelete = async (id: string) => {
+    if (id === currentUserId) {
+      alert("You cannot delete your own account.");
+      return;
+    }
     if (!confirm("Delete this user?")) return;
     setActionId(id);
     try {
@@ -124,7 +139,10 @@ export default function UsersPage() {
                 users.map((u, i) => (
                   <motion.tr key={u.id} variants={item}
                     className="border-b border-border last:border-0 hover:bg-accent/50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-ink">{u.name}</td>
+                     <td className="px-4 py-3 font-medium text-ink">
+                       {u.name}
+                       {u.id === currentUserId && <span className="ml-1.5 rounded bg-gold/20 px-1.5 py-0.25 text-[9px] font-medium text-gold">You</span>}
+                     </td>
                     <td className="px-4 py-3 text-muted-foreground">{u.email}</td>
                     <td className="px-4 py-3">
                       <span className="rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-medium text-ink uppercase">{u.role}</span>
@@ -139,16 +157,16 @@ export default function UsersPage() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" aria-label={u.isActive ? "Deactivate user" : "Activate user"} onClick={() => handleToggleActive(u.id, u.isActive)} disabled={actionId === u.id}>
-                          {actionId === u.id ? (
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
-                          ) : u.isActive ? (
-                            <Shield className="h-4 w-4 text-green-600" strokeWidth={1.5} />
-                          ) : (
-                            <ShieldOff className="h-4 w-4" strokeWidth={1.5} />
-                          )}
-                        </Button>
-                        <Button variant="ghost" size="icon" aria-label="Delete user" onClick={() => handleDelete(u.id)} disabled={actionId === u.id} className="text-red-500 hover:text-red-700">
+                       <Button variant="ghost" size="icon" aria-label={u.isActive ? "Deactivate user" : "Activate user"} onClick={() => handleToggleActive(u.id, u.isActive)} disabled={actionId === u.id || u.id === currentUserId}>
+                         {actionId === u.id ? (
+                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-green-600 border-t-transparent" />
+                           ) : u.isActive ? (
+                             <Shield className="h-4 w-4 text-green-600" strokeWidth={1.5} />
+                           ) : (
+                             <ShieldOff className="h-4 w-4" strokeWidth={1.5} />
+                           )}
+                       </Button>
+                       <Button variant="ghost" size="icon" aria-label="Delete user" onClick={() => handleDelete(u.id)} disabled={actionId === u.id || u.id === currentUserId} className="text-red-500 hover:text-red-700">
                           {actionId === u.id ? (
                             <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
                           ) : (

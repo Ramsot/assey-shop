@@ -1,33 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Save, Palette, Eye } from "lucide-react";
 
+const DEFAULTS = {
+  primaryColor: "#1a1a2e",
+  secondaryColor: "#d4a853",
+  accentColor: "#e8e4d9",
+  backgroundColor: "#f8f7f4",
+  textColor: "#1a1a2e",
+  headingFont: "Playfair Display",
+  bodyFont: "Inter",
+  borderRadius: "12",
+  favicon: "",
+  logoUrl: "",
+  customCss: "",
+};
+
 export default function AppearancePage() {
-  const [form, setForm] = useState({
-    primaryColor: "#1a1a2e",
-    secondaryColor: "#d4a853",
-    accentColor: "#e8e4d9",
-    backgroundColor: "#f8f7f4",
-    textColor: "#1a1a2e",
-    headingFont: "Playfair Display",
-    bodyFont: "Inter",
-    borderRadius: "12",
-    favicon: "",
-    logoUrl: "",
-    customCss: "",
-  });
+  const [form, setForm] = useState<Record<string, string>>(DEFAULTS);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    fetch("/admin/api/settings?group=appearance")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success && json.data?.appearance) {
+          setForm((prev) => ({ ...prev, ...json.data.appearance }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setError("");
+    try {
+      const bulk = Object.entries(form).map(([key, value]) => ({
+        key, value, group: "appearance",
+      }));
+      const res = await fetch("/admin/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bulk }),
+      });
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || "Failed to save");
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const container = {
@@ -136,6 +165,7 @@ export default function AppearancePage() {
             {saving ? "Saving..." : "Save Changes"}
           </button>
           {saved && <span className="text-xs text-green-600">Changes saved!</span>}
+          {error && <span className="text-xs text-red-500">{error}</span>}
         </div>
       </motion.form>
     </motion.div>

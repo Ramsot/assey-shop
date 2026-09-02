@@ -32,13 +32,13 @@ export default function WebsiteContentPage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    fetch("/admin/api/website-content")
+    fetch("/admin/api/settings")
       .then((r) => r.json())
       .then((res) => {
-        if (res.success && res.data.length) {
+        if (res.success && res.data?.content) {
+          const content = res.data.content;
           const merged = defaultPages.map((dp) => {
-            const found = res.data.find((d: ContentPage) => d.key === dp.key);
-            return found ? { ...dp, content: found.content, updatedAt: found.updatedAt } : dp;
+            return { ...dp, content: content[dp.key] ?? dp.content };
           });
           setPages(merged);
         }
@@ -55,17 +55,19 @@ export default function WebsiteContentPage() {
   const handleSave = async (page: ContentPage) => {
     setSaving(true);
     try {
-      await fetch("/admin/api/website-content", {
-        method: "PUT",
+      const res = await fetch("/admin/api/settings", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: page.key, content: editContent }),
+        body: JSON.stringify({ bulk: [{ key: page.key, value: editContent, group: "content" }] }),
       });
+      const json = await res.json();
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to save content");
       setPages(pages.map((p) => p.id === page.id ? { ...p, content: editContent } : p));
       setEditing(null);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
-      alert("Error saving content");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error saving content");
     } finally {
       setSaving(false);
     }

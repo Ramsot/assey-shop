@@ -4,7 +4,8 @@ Handles order creation, address management, and confirmation.
 """
 
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.db import transaction
 from decimal import Decimal
@@ -35,7 +36,7 @@ def calculate_order_totals(items_data, shipping_method):
         raise ValueError('No valid SKUs provided')
 
     products_map = {
-        p.sku: p for p in Product.objects.filter(sku__in=skus)
+        p.sku: p for p in Product.objects.filter(sku__in=skus, is_active=True)
     }
 
     missing = [s for s in skus if s not in products_map]
@@ -64,21 +65,31 @@ def calculate_order_totals(items_data, shipping_method):
 class ShippingAddressViewSet(viewsets.ModelViewSet):
     """
     Create and manage shipping addresses.
-    POST /api/checkout/addresses/
-    GET  /api/checkout/addresses/
+    POST /api/checkout/addresses/   — create (guest checkout allowed)
+    GET  /api/checkout/addresses/   — list (authenticated only; PII)
     """
     queryset = ShippingAddress.objects.all().order_by('-created_at')
     serializer_class = ShippingAddressSerializer
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
 
 class PaymentMethodViewSet(viewsets.ModelViewSet):
     """
     Create and manage payment methods.
-    POST /api/checkout/payment-methods/
-    GET  /api/checkout/payment-methods/
+    POST /api/checkout/payment-methods/   — create (guest checkout allowed)
+    GET  /api/checkout/payment-methods/   — list (authenticated only; PII)
     """
     queryset = PaymentMethod.objects.all().order_by('-created_at')
     serializer_class = PaymentMethodSerializer
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [AllowAny()]
+        return [IsAuthenticated()]
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -90,6 +101,13 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all().select_related('shipping_address')
     serializer_class = OrderSerializer
     lookup_field = 'order_number'
+
+    def get_permissions(self):
+        if self.action in ("create", "retrieve"):
+            return [AllowAny()]
+        if self.action == "list":
+            return [IsAuthenticated()]
+        return [IsAuthenticated()]
 
     def create(self, request):
         """
@@ -183,6 +201,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='recent-sales')
+    @permission_classes([IsAuthenticated])
     def recent_sales(self, request):
         """Latest 5 orders for the admin dashboard live feed."""
         orders = Order.objects.select_related('shipping_address').order_by('-created_at')[:5]
