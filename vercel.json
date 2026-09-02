@@ -1,5 +1,17 @@
 {
   "version": 2,
+  "framework": "nextjs",
+  "rootDirectory": "frontend",
+  "builds": [
+    {
+      "src": "frontend/next.config.js",
+      "use": "@vercel/next",
+      "config": {
+        "framework": "nextjs",
+        "distDir": ".next"
+      }
+    }
+  ],
   "routes": [
     {
       "src": "/static/(.*)",
