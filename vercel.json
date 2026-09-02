@@ -1,22 +1,12 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/assey_store/wsgi.py",
-      "use": "@vercel/python",
-      "config": {
-        "runtime": "python3.11",
-        "installCommand": "cd backend && pip install -r requirements.txt && DEBUG=0 SECRET_KEY=vercel-build-placeholder python manage.py collectstatic --noinput"
-      }
-    }
-  ],
   "routes": [
     {
       "src": "/static/(.*)",
       "dest": "/static/$1"
     },
     {
-      "src": "/(.*)",
+      "src": "/api/(.*)",
       "dest": "backend/assey_store/wsgi.py"
     }
   ]
