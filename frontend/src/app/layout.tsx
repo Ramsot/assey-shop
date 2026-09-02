@@ -52,7 +52,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>): JSX.Element {
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
-      <body className="min-h-screen">{children}</body>
+      <body className="min-h-screen bg-background text-ink antialiased">{children}</body>
     </html>
   );
 }

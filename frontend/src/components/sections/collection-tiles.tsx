@@ -41,43 +41,40 @@ export function CollectionTiles({ collections }: CollectionTilesProps): JSX.Elem
           </Link>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {active.map((collection, index) => (
             <motion.div
               key={collection.key}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
+              viewport={{ once: true, margin: "-100px" }}
               transition={{
-                duration: 0.7,
+                duration: 0.8,
                 delay: index * 0.1,
                 ease: [0.25, 0.46, 0.45, 0.94],
               }}
             >
               <Link
                 href={`/collections/${collection.key}`}
-                className="group relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-2xl p-6"
+                className="group relative flex flex-col h-full overflow-hidden rounded-3xl p-8 pt-12"
                 style={{
                   background: gradients[collection.key] || gradients.default,
                 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/30 via-ink/5 to-transparent" />
-                <div className="relative z-10">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-white/80">
+                <div className="absolute top-0 left-0 right-0 h-1/5 bg-gradient-to-b from-ink/20 via-ink/5 to-transparent" />
+                <div className="relative z-10 flex-1">
+                  <span className="text-[0.75em] font-semibold uppercase tracking-[0.15em] text-white/80">
                     {collection.caption}
                   </span>
-                  <h3 className="mt-2 font-serif text-2xl text-white">
+                  <h3 className="mt-3 font-serif text-2xl text-white">
                     {collection.title || collection.name}
                   </h3>
-                  <p className="mt-2 max-w-xs text-sm text-white/80">
+                  <p className="mt-3 max-w-xs text-sm text-white/80">
                     {collection.description}
                   </p>
                 </div>
                 <div
-                  className={cn(
-                    "absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-300",
-                    "group-hover:opacity-100"
-                  )}
+                  className="absolute inset-0 bg-white/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                 />
               </Link>
             </motion.div>

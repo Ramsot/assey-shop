@@ -93,7 +93,7 @@ export function Hero(): JSX.Element {
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: "easeOut" }}
-          className="relative h-[50vh] overflow-hidden rounded-2xl bg-stone lg:h-[calc(100vh-10rem)]"
+          className="relative h-[calc(100vh_30%)] overflow-hidden rounded-2xl bg-stone lg:h-[calc(100vh-10rem)]"
         >
           <Image
             src="https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=1200&auto=format&fit=crop"

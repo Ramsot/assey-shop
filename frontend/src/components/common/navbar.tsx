@@ -39,7 +39,7 @@ export function Navbar(): JSX.Element {
       <header
         className={cn(
           "fixed inset-x-0 top-0 z-40 transition-all duration-300",
-          scrolled ? "bg-paper/90 py-4 backdrop-blur-md" : "bg-transparent py-6"
+          scrolled ? "bg-paper/80 py-3 backdrop-blur-md border-b border-border" : "bg-transparent py-6"
         )}
       >
         <div className="container-narrow flex items-center justify-between">
@@ -47,7 +47,7 @@ export function Navbar(): JSX.Element {
             <span className="font-serif text-2xl font-semibold tracking-tight text-ink">
               ASSEY
             </span>
-            <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            <span className="text-[0.75em] uppercase tracking-[0.15em] text-muted-foreground">
               Atelier
             </span>
           </Link>
@@ -58,7 +58,7 @@ export function Navbar(): JSX.Element {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "relative text-xs uppercase tracking-[0.16em] text-ink transition-opacity hover:opacity-70",
+                  "relative text-xs uppercase tracking-[0.12em] text-ink transition-opacity hover:opacity-70",
                   pathname === link.href && "font-semibold"
                 )}
               >
@@ -73,11 +73,11 @@ export function Navbar(): JSX.Element {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
-            <Link href="/checkout" className="relative p-2">
-              <ShoppingBag className="h-5 w-5 text-ink" strokeWidth={1.5} />
+          <div className="flex items-center gap-2">
+            <Link href="/checkout" className="relative p-2.5">
+              <ShoppingBag className="h-4.5 w-4.5 text-ink" strokeWidth={1.5} />
               {count > 0 && (
-                <span className="absolute right-0 top-0 flex h-4 w-4 items-center justify-center rounded-full bg-ink text-[9px] font-medium text-paper">
+                <span className="absolute right-0 top-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-ink text-[8px] font-medium text-paper">
                   {count}
                 </span>
               )}
@@ -91,7 +91,7 @@ export function Navbar(): JSX.Element {
               onClick={() => setMobileOpen(true)}
               aria-label="Open menu"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-4.5 w-4.5" />
             </Button>
           </div>
         </div>
@@ -100,12 +100,13 @@ export function Navbar(): JSX.Element {
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-paper"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 z-50 bg-paper/95"
           >
-            <div className="container-narrow flex h-full flex-col py-6">
+            <div className="container-narrow flex h-full flex-col py-8">
               <div className="flex items-center justify-between">
                 <Link href="/" className="font-serif text-2xl font-semibold">
                   ASSEY
@@ -116,22 +117,22 @@ export function Navbar(): JSX.Element {
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
                 >
-                  <X className="h-5 w-5" />
+                  <X className="h-4.5 w-4.5" />
                 </Button>
               </div>
 
-              <nav className="mt-16 flex flex-col gap-6">
+              <nav className="mt-12 flex flex-col gap-4">
                 {navLinks.map((link, index) => (
                   <motion.div
                     key={link.href}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.08 }}
+                    transition={{ delay: index * 0.06 }}
                   >
                     <Link
                       href={link.href}
                       onClick={() => setMobileOpen(false)}
-                      className="font-serif text-4xl font-light text-ink"
+                      className="font-serif text-3xl font-light text-ink"
                     >
                       {link.label}
                     </Link>
@@ -139,7 +140,7 @@ export function Navbar(): JSX.Element {
                 ))}
               </nav>
 
-              <div className="mt-auto">
+              <div className="mt-8">
                 <Link href="/checkout" onClick={() => setMobileOpen(false)}>
                   <Button className="w-full" size="lg">
                     Checkout {count > 0 && `(${count})`}
