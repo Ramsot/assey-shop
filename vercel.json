@@ -1,25 +1,4 @@
 {
   "version": 2,
-  "framework": "nextjs",
-  "rootDirectory": "frontend",
-  "builds": [
-    {
-      "src": "frontend/next.config.js",
-      "use": "@vercel/next",
-      "config": {
-        "framework": "nextjs",
-        "distDir": ".next"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "backend/assey_store/wsgi.py"
-    }
-  ]
+  "rootDirectory": "frontend"
 }
